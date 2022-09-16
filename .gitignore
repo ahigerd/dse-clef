@@ -30,3 +30,6 @@ include
 plugins/foobar2000
 plugins/pfc
 plugins/libPPUI
+
+# de-ignore submodule
+!/seq2wav

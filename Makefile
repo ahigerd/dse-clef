@@ -8,7 +8,7 @@ all: cli plugins
 
 plugins: audacious
 
-includes: $(wildcard seq2wav/src/*.h seq2wav/src/*/*.h)
+includes: seq2wav/src $(wildcard seq2wav/src/*.h seq2wav/src/*/*.h)
 	$(MAKE) -C seq2wav includes
 
 audacious: aud_$(PLUGIN_NAME).$(DLL)
@@ -18,7 +18,7 @@ winamp: in_$(PLUGIN_NAME).dll
 foobar: foo_input_$(PLUGIN_NAME).dll
 
 seq2wav/src:
-	git submodules update --init --recursive
+	git submodule update --init --recursive
 
 ifeq ($(CROSS),msvc)
 depends.mak:  seq2wav/src $(wildcard src/*.h src/*.cpp src/*/*.h src/*/*.cpp plugins/*.cpp seq2wav/src/*.cpp seq2wav/src/*/*.h seq2wav/src/*/*.cpp seq2wav/src/*/*.h)
