@@ -16,10 +16,11 @@ SadlChunk::SadlChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int of
   uint8_t sampleType = data[offset + 0x33] & 0x06;
   stereo = data[offset + 0x32] > 1;
   sampleRate = sampleType * 8182;
+  if (!sampleRate) sampleRate = 16384;
   uint8_t codec = data[offset + 0x33] & 0xf0;
   offset += 0x100;
-  if (codec == 0x70) {
-    AdpcmCodec codec(parent->context(), AdpcmCodec::DSP, stereo ? 1 : 0);
+  if (codec == 0x70 || codec == 0x00) {
+    AdpcmCodec codec(parent->context(), AdpcmCodec::NDS, stereo ? 0x10 : 0);
     sample = codec.decodeRange(data.begin() + offset, data.begin() + offset + sampleLength, uint64_t(offset) << 32);
   } else if (codec == 0xb0) {
     ProcyonCodec codec(parent->context(), stereo);
