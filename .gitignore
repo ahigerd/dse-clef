@@ -7,6 +7,9 @@
 *.m4a
 *.wav
 *.m3u
+*.smd
+*.swd
+*.sad
 
 # build temporaries
 *.o
