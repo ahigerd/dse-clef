@@ -14,7 +14,7 @@ struct Instrument
 
   DSEContext* context;
   int programId;
-  double leftGain, rightGain;
+  double gain, pan;
 
   std::vector<LFO> lfos;
   std::vector<SplitInfo> splits;

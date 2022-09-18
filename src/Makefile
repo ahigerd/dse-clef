@@ -9,7 +9,7 @@ OBJS_D = $(patsubst %.cpp, ../$(BUILDPATH)/%_d.o, $(SOURCES))
 	$(CXX) -o $@ $(OBJS_R) $(LDFLAGS_R)
 	strip $@
 
-../$(PLUGIN_NAME)_d$(EXE): ../seq2wav/$(BUILDPATH)/libseq2wav_d.$(DLL) $(OBJS_D)
+../$(PLUGIN_NAME)_d$(EXE): ../seq2wav/$(BUILDPATH)/libseq2wav_d.a $(OBJS_D)
 	$(CXX) -o $@ $(OBJS_D) $(LDFLAGS_D)
 
 ../$(BUILDPATH)/%.o: %.cpp Makefile ../config.mak

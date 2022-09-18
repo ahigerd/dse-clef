@@ -1,6 +1,7 @@
 #ifndef SYNTH_TRACK_H
 #define SYNTH_TRACK_H
 
+#include "seq/itrack.h"
 #include "note.h"
 #include <vector>
 #include <utility>
@@ -9,7 +10,7 @@ class TrackChunk;
 class DSEContext;
 class Instrument;
 
-struct Track
+struct Track : public ITrack
 {
   Track(const TrackChunk* track, DSEContext* synth);
 
@@ -20,13 +21,15 @@ struct Track
   std::set<int>::const_iterator timingIter, timingEnd;
 
   int lastRestLength, lastNoteLength, octave, bendRange;
-  double volume, detune, pitchBend, expression, leftGain, rightGain;
+  double volume, detune, pitchBend, expression, pan, gain;
   double samplesPerTick;
 
-  std::vector<Note> notes;
+  virtual bool isFinished() const;
+  virtual double length() const;
 
-  std::pair<double, double> gain() const;
-  bool processEvent(std::vector<int16_t>& buffer);
+protected:
+  virtual std::shared_ptr<SequenceEvent> readNextEvent();
+  virtual void internalReset();
 };
 
 #endif

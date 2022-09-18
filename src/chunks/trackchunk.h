@@ -58,7 +58,7 @@ struct TrkEvent
     SetLFO2DelayFade = 0xE5,
     SetLFO2ToVolumeEnabled = 0xE7,
     SetPan = 0xE8,
-    SetPan2 = 0xE9,
+    AddToPan = 0xE9,
     SweepPan = 0xEA,
     ReplaceLFO3AsPan = 0xEC,
     SetLFO3DelayFade = 0xED,

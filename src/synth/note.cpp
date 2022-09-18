@@ -7,7 +7,7 @@
 Note::Note(const TrkEvent& ev, double time, int octave, int lastLength)
 : noteNumber(ev.midiNote(octave)), remaining(ev.duration(lastLength)), bendRange(2), loopSample(true),
   useEnvelope(false), sample(nullptr), startTime(time), releasedAt(HUGE_VAL), pitch(noteNumber),
-  velocity(ev.velocity()), phase(0), leftGain(1.0), rightGain(1.0), attackLevel(1.0), attackTime(0),
+  velocity(ev.velocity()), phase(0), gain(1.0), pan(0), attackLevel(1.0), attackTime(0),
   holdTime(0), decayTime(0), sustainLevel(0), fadeTime(HUGE_VAL), releaseTime(80)
 {
   // initializers only

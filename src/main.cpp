@@ -6,7 +6,7 @@
 
 static std::map<std::string, ActionFn> actionFns{
   { "extract-dse", extractDSE },
-  { "list-chunks", listChunks },
+  { "chunks", listChunks },
   { "dump-samples", dumpSamples },
   { "dump-streams", dumpStreams },
   { "synth", synthSequence },
@@ -20,7 +20,7 @@ int main(int argc, char** argv)
     { "extract-dse", "", "", "Scan input for DSE files and save to disk" },
     { "romaji", "", "", "(for --extract-dse) Attempt to convert Japanese filenames to romaji" },
     { "chunks", "", "", "List all chunks in the input files" },
-    { "verbose", "", "", "(for --chunks) Show more information about recognized chunks" },
+    { "verbose", "v", "", "(for --chunks) Show more information about recognized chunks" },
     { "dump-samples", "", "", "Save all identified samples to disk" },
     { "dump-streams", "", "", "Save all identified streams to disk" },
     { "raw", "", "", "(for --dump-samples) Save raw samples without decoding or headers" },

@@ -10,16 +10,18 @@ Track::Track(const TrackChunk* track, DSEContext* synth)
 : trk(track), context(synth), currentInstrument(nullptr), eventPos(0), tickPos(0), samplePos(0),
   lastRestLength(0), lastNoteLength(0), octave(4), bendRange(0),
   volume(16.0), detune(0), pitchBend(0), expression(1.0),
-  leftGain(1.0), rightGain(1.0)
+  pan(0.0), gain(1.0)
 {
   timingIter = context->allTimings[trk->trackID()].begin();
   timingEnd = context->allTimings[trk->trackID()].end();
+  samplesPerTick = context->samplesPerTick(120);
 }
 
+#if 0
 bool Track::processEvent(std::vector<int16_t>& buffer)
 {
   const TrkEvent& ev = trk->events[eventPos];
-  bool mute = false; // (trk->trackID() != 6);// && (trk->trackID() != 6);
+  bool mute = false; // (trk->trackID() != 6);
 
   if (ev.eventType == TrkEvent::SetOctave) {
     octave = ev.paramU8();
@@ -154,12 +156,195 @@ bool Track::processEvent(std::vector<int16_t>& buffer)
   ++eventPos;
   return eventPos >= trk->events.size();
 }
+#endif
 
-std::pair<double, double> Track::gain() const
+bool Track::isFinished() const
 {
-  if (currentInstrument) {
-    return std::make_pair(leftGain * currentInstrument->leftGain, rightGain * currentInstrument->rightGain);
-  } else {
-    return std::make_pair(leftGain, rightGain);
+  return eventPos >= trk->events.size();
+}
+
+double Track::length() const
+{
+  return double(context->sampleLength) / context->sampleRate;
+}
+
+std::shared_ptr<SequenceEvent> Track::readNextEvent()
+{
+  SequenceEvent* nextEvent = nullptr;
+  while (!nextEvent && !isFinished()) {
+    const TrkEvent& ev = trk->events[eventPos];
+    bool unhandled = false;
+
+    switch (ev.eventType) {
+    case TrkEvent::SetTempo:
+    case TrkEvent::SetTempo2:
+    case TrkEvent::EndOfTrack:
+    case TrkEvent::LoopPoint:
+      // handled in DSEContext::prepareTimings()
+      break;
+    case TrkEvent::SetSwdlAndBank:
+    case TrkEvent::SetSwdl:
+    case TrkEvent::SetBank:
+      // handled in metadata for now
+      break;
+    case TrkEvent::PollSilence:
+    case TrkEvent::Segno:
+    case TrkEvent::DalSegno:
+    case TrkEvent::ToCoda:
+      unhandled = true; break;
+    case TrkEvent::SetOctave:
+      octave = ev.paramU8();
+      break;
+    case TrkEvent::AddOctave:
+      octave += ev.paramU8();
+      break;
+    case TrkEvent::SetPreset:
+      currentInstrument = context->findInstrument(ev.paramU8());
+      break;
+    case TrkEvent::SweepSongVolume:
+    case TrkEvent::DisableEnvelope:
+    case TrkEvent::SetEnvelopeAttack:
+    case TrkEvent::SetEnvelopeAttackTime:
+    case TrkEvent::SetEnvelopeHold:
+    case TrkEvent::SetEnvelopeDecaySustain:
+    case TrkEvent::SetEnvelopeFade:
+    case TrkEvent::SetEnvelopeRelease:
+    case TrkEvent::SetNoteVolume:
+    case TrkEvent::SetChannelPan:
+    case TrkEvent::SetChannelVolume:
+    case TrkEvent::SetFineTune:
+    case TrkEvent::AddToFineTune:
+    case TrkEvent::SetCoarseTune:
+    case TrkEvent::AddToTune:
+    case TrkEvent::SweepTune:
+    case TrkEvent::SetRandomNoteRange:
+    case TrkEvent::SetDetuneRange:
+      unhandled = true; break;
+    case TrkEvent::SetPitchBend:
+      // Interpretation? Assuming it matches default MIDI range
+      // Notes say 500 = 1 semitone and negative means up
+      pitchBend = ev.param16BE() / -4000.0;
+      // Disassembly says:
+      //   FUN_02073c90(ChanStructPtr, (int)(((uint)EventDataPtr[1] + (uint)*EventDataPtr * 0x100) * 0x10000) >> 0x10);
+      break;
+    case TrkEvent::SetPitchBendRange:
+      bendRange = ev.paramU8();
+      break;
+    case TrkEvent::ReplaceLFO1AsPitch:
+    case TrkEvent::SetLFO1DelayFade:
+    case TrkEvent::SetLFO1ToPitchEnabled:
+      unhandled = true; break;
+    case TrkEvent::SetVolume:
+      volume = ev.paramU8() / 127.0 * 16.0;
+      break;
+    case TrkEvent::AddVolume:
+      volume += ev.paramU8() / 127.0 * 16.0;
+      break;
+    case TrkEvent::SweepVolume:
+    case TrkEvent::SetExpression:
+      expression = ev.paramU8() / 127.0;
+      break;
+    case TrkEvent::ReplaceLFO2AsVolume:
+    case TrkEvent::SetLFO2DelayFade:
+    case TrkEvent::SetLFO2ToVolumeEnabled:
+      unhandled = true; break;
+    case TrkEvent::SetPan:
+      pan = ev.paramU8() / 64.0;
+      break;
+    case TrkEvent::AddToPan:
+      pan += ev.paramU8() / 64.0;
+      if (pan < -1.0) {
+        pan = -1.0;
+      } else if (pan > 1.0) {
+        pan = 1.0;
+      }
+      break;
+    case TrkEvent::SweepPan:
+    case TrkEvent::ReplaceLFO3AsPan:
+    case TrkEvent::SetLFO3DelayFade:
+    case TrkEvent::SetLFO3ToPanEnabled:
+    case TrkEvent::ReplaceLFO:
+    case TrkEvent::SetLFODelayFade:
+    case TrkEvent::SetLFOParam:
+    case TrkEvent::SetLFORoute:
+      unhandled = true; break;
+    case TrkEvent::RepeatRest:
+    case TrkEvent::AddRest:
+    case TrkEvent::Rest8:
+    case TrkEvent::Rest16:
+    case TrkEvent::Rest24:
+    default:
+      if (ev.isPlayNote()) {
+        double startTime = samplePos * context->sampleTime;
+        octave += ev.octaveOffset();
+        Note note = currentInstrument ?
+          currentInstrument->startNote(ev, 0, octave, lastNoteLength) :
+          Note(ev, 0, octave, lastNoteLength);
+        note.pitch += (std::rand() / (0.5 * RAND_MAX) - 1.0) * detune;
+        lastNoteLength = note.remaining;
+        if (lastNoteLength == 0) break;
+        OscillatorEvent* osc = new OscillatorEvent;
+        if (currentInstrument && currentInstrument->programId >= 0x7c) {
+          note.makeNoiseDrum();
+          osc->waveformID = 5;
+          //note.pitch += 24;
+        } else {
+          osc->waveformID = 0;
+        }
+        osc->timestamp = startTime;
+        osc->duration = lastNoteLength * samplesPerTick * context->sampleTime;
+        //std::cerr << "p=" << note.pitch << " d=" << osc->duration << std::endl;
+        osc->volume = (volume / 127.0) * (note.velocity / 127.0);
+        osc->pan = pan;
+        osc->setEnvelope(
+            note.attackTime * context->sampleTime,
+            note.holdTime * context->sampleTime,
+            note.decayTime * context->sampleTime,
+            note.sustainLevel,
+            note.releaseTime * context->sampleTime);
+        osc->frequency = TrkEvent::frequency(note.pitch, pitchBend);
+        nextEvent = osc;
+      } else if (ev.isRest()) {
+        lastRestLength = ev.duration(lastRestLength);
+        int endTick = tickPos + lastRestLength;
+        while (endTick > tickPos && timingIter != timingEnd) {
+          ++timingIter;
+          int nextTick = *timingIter;
+          if (context->tempos.count(tickPos)) {
+            samplesPerTick = context->samplesPerTick(context->tempos[tickPos]);
+          }
+          int tickLen = nextTick - tickPos;
+          samplePos += tickLen * samplesPerTick;
+          tickPos = nextTick;
+        }
+      } else {
+        unhandled = true; break;
+      }
+    };
+
+    if (unhandled) {
+      std::cerr << "Unhandled event " << ev.debug(octave, lastNoteLength, lastRestLength) << std::endl;
+    }
+    eventPos++;
   }
+  return std::shared_ptr<SequenceEvent>(nextEvent);
+}
+
+void Track::internalReset()
+{
+  currentInstrument = nullptr;
+  eventPos = 0;
+  tickPos = 0;
+  samplePos = 0;
+  lastRestLength = 0;
+  lastNoteLength = 0;
+  octave = 4;
+  bendRange = 0;
+  volume = 16.0;
+  detune = 0;
+  pitchBend = 0;
+  expression = 1.0;
+  gain = 1.0;
+  pan = 0.0;
+  timingIter = context->allTimings[trk->trackID()].begin();
 }

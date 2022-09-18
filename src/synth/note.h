@@ -27,8 +27,8 @@ struct Note
   double pitch;
   double velocity;
   double phase;
-  double leftGain;
-  double rightGain;
+  double gain;
+  double pan;
   double attackLevel;
   double attackTime;
   double holdTime;

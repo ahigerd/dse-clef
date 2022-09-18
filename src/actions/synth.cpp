@@ -63,7 +63,6 @@ bool synthSequence(S2WContext* ctx, const std::vector<std::string>& paths, const
     }
 
     context.prepareTimings();
-    std::vector<int16_t> samples(context.sampleLength * 2, 0);
     std::vector<Track> tracks;
     std::vector<bool> trackDone;
     int trackCount = context.tracks.size();
@@ -73,11 +72,14 @@ bool synthSequence(S2WContext* ctx, const std::vector<std::string>& paths, const
     int64_t progress = 0;
     int percent = 0;
     std::cerr << "Progress: 0%" << std::flush;
+    tracks.reserve(context.tracks.size());
     for (TrackChunk* track : context.tracks) {
       tracks.emplace_back(track, &context);
+      context.addChannel(&tracks[tracks.size() - 1]);
       trackDone.push_back(false);
     }
 
+#if 0
     int64_t progressMax = int64_t(context.sampleLength) * tracksLeft;
     while (tracksLeft > 0) {
       int newTickPos = tickPos;
@@ -102,23 +104,18 @@ bool synthSequence(S2WContext* ctx, const std::vector<std::string>& paths, const
       }
       tickPos = newTickPos;
     }
+#endif
 
+    int sampleLength = context.sampleLength;
     if (context.loopSample >= 0) {
-      int oldSize = samples.size();
-      int loopSample = context.loopSample * 2;
+      int oldSize = context.sampleLength;
+      int loopSample = context.loopSample;
       int loopLength = oldSize - loopSample;
-      int fadeLength = int(5.0 / context.sampleTime) * 2;
+      int fadeLength = int(5.0 / context.sampleTime);
       if (fadeLength > loopLength) {
         fadeLength = loopLength;
       }
-      samples.resize(oldSize + loopLength + fadeLength + 2, 0);
-      std::copy(samples.begin() + loopSample, samples.begin() + oldSize, samples.begin() + oldSize);
-      int fadeStart = oldSize + loopLength;
-      for (int i = 0; i < fadeLength; i++) {
-        double fade = double(fadeLength - i) / fadeLength;
-        samples[fadeStart + i] = samples[loopSample + i] * fade;
-        samples[fadeStart + i + 1] = samples[loopSample + i + 1] * fade;
-      }
+      sampleLength = oldSize + loopLength + fadeLength + 1;
     }
     int slashPos = path.find_last_of('/');
     if (slashPos == std::string::npos) {
@@ -126,7 +123,7 @@ bool synthSequence(S2WContext* ctx, const std::vector<std::string>& paths, const
     }
     int dotPos = path.find_last_of('.');
     std::string filename = path.substr(slashPos + 1, dotPos == std::string::npos ? dotPos : dotPos - slashPos - 1);
-#ifdef _WIN32
+#ifndef _WIN32
     if (outputPath == "-") {
       filename = "/dev/stdout";
     } else
@@ -135,9 +132,10 @@ bool synthSequence(S2WContext* ctx, const std::vector<std::string>& paths, const
       filename = outputPath + "/" + filename + ".wav";
     }
     std::cerr << "\rWriting " << filename << "..." << std::endl;
-    RiffWriter riff(sampleRate, true, samples.size() * 2);
+    // TODO: ensure length accuracy
+    RiffWriter riff(sampleRate, true, sampleLength * 2);
     riff.open(filename);
-    riff.write(samples);
+    context.save(&riff);
     riff.close();
     didSomething = true;
   }

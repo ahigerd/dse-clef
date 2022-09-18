@@ -27,7 +27,7 @@ depends.mak:  seq2wav/src $(wildcard src/*.h src/*.cpp src/*/*.h src/*/*.cpp plu
 foo_input_$(PLUGIN_NAME).$(DLL) in_$(PLUGIN_NAME).$(DLL) aud_$(PLUGIN_NAME).$(DLL) clean: FORCE depends.mak
 	MAKEFLAGS= $(WINE) nmake /f msvc32.mak $@
 else
-seq2wav/$(BUILDPATH)/libseq2wav.a seq2wav/$(BUILDPATH)/libseq2wav_d.$(DLL): seq2wav/src $(wildcard seq2wav/src/*.cpp seq2wav/*/*.h seq2wav/src/*/*.cpp seq2wav/*/*/*.h)
+seq2wav/$(BUILDPATH)/libseq2wav.a seq2wav/$(BUILDPATH)/libseq2wav_d.a: seq2wav/src $(wildcard seq2wav/src/*.cpp seq2wav/*/*.h seq2wav/src/*/*.cpp seq2wav/*/*/*.h)
 	$(MAKE) -C seq2wav $(BUILDPATH)/$(notdir $@)
 
 $(BUILDPATH)/Makefile.d: $(wildcard src/*.cpp src/*/*.cpp src/*.h src/*/*.h) Makefile src/Makefile config.mak
@@ -36,7 +36,7 @@ $(BUILDPATH)/Makefile.d: $(wildcard src/*.cpp src/*/*.cpp src/*.h src/*/*.h) Mak
 $(PLUGIN_NAME)$(EXE): includes src/Makefile $(BUILDPATH)/Makefile.d config.mak seq2wav/$(BUILDPATH)/libseq2wav.a
 	$(MAKE) -C src ../$(PLUGIN_NAME)$(EXE)
 
-$(PLUGIN_NAME)_d$(EXE): includes src/Makefile $(BUILDPATH)/Makefile.d config.mak seq2wav/$(BUILDPATH)/libseq2wav_d.$(DLL)
+$(PLUGIN_NAME)_d$(EXE): includes src/Makefile $(BUILDPATH)/Makefile.d config.mak seq2wav/$(BUILDPATH)/libseq2wav_d.a
 	$(MAKE) -C src ../$(PLUGIN_NAME)_d$(EXE)
 
 aud_$(PLUGIN_NAME).$(DLL): includes $(PLUGIN_NAME)$(EXE) seq2wav/$(BUILDPATH)/libseq2wav.a plugins/Makefile config.mak plugins/s2wplugin.cpp

@@ -1,5 +1,6 @@
 #include "instrument.h"
 #include "dsecontext.h"
+#include "utility.h"
 #include "../chunks/wavichunk.h"
 #include "../chunks/trackchunk.h"
 #include <cmath>
@@ -43,15 +44,13 @@ static const double envDuration[2][128] = {
 };
 
 Instrument::Instrument()
-: context(nullptr), programId(-1), leftGain(1.0), rightGain(1.0)
+: context(nullptr), programId(-1), gain(1.0), pan(0.0)
 {
   // initializers only
 }
 
 Instrument::Instrument(const ProgramInfo& preset, DSEContext* synth)
-: context(synth), programId(preset.id),
-  leftGain((preset.gain / 127.0) * (2.0 - preset.pan / 64.0)),
-  rightGain((preset.gain / 127.0) * (preset.pan / 64.0)),
+: context(synth), programId(preset.id), gain(preset.gain / 127.0), pan(preset.pan / 64.0),
   splits(preset.splits)
 {
   for (const LFOInfo& lfo : preset.lfos) {
@@ -90,15 +89,14 @@ Note Instrument::startNote(const TrkEvent& ev, double time, int octave, int last
     note.sample = context ? context->findSample(split) : nullptr;
     if (note.sample) {
       // If using samples honor pan, tuning, and volume
-      note.leftGain *= (split.volume / 127.0) * (2.0 - split.pan / 64.0);
-      note.rightGain *= (split.volume / 127.0) * (split.pan / 64.0);
+      note.gain = gain * (split.volume / 127.0);
       //note.pitch -= split.transpose + (split.fineTune / 255.0);
     } else {
       // If using debug waves, honor pan and invert volume, assuming
       // it was used to equalize the volume of different samples.
-      note.leftGain *= (2.0 - split.pan / 64.0) * (2.0 - split.volume / 127.0);
-      note.rightGain *= (split.pan / 64.0) * (2.0 - split.volume / 127.0);
+      note.gain = gain * (2.0 - split.volume / 127.0);
     }
+    note.pan = clamp(pan + (split.pan / 64.0), -1.0, 1.0);
     break;
   }
   return note;

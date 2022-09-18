@@ -90,7 +90,7 @@ TrackChunk::TrackChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int 
       case TrkEvent::AddVolume:
       case TrkEvent::SetExpression:
       case TrkEvent::SetPan:
-      case TrkEvent::SetPan2:
+      case TrkEvent::AddToPan:
       case TrkEvent::Segno:
       case TrkEvent::SetSwdl:
       case TrkEvent::SetBank:
