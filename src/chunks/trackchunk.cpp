@@ -6,6 +6,23 @@
 
 REGISTER_CHUNK(TrackChunk)
 
+namespace UnusedEvent {
+  enum {
+    NoOp16 = 0xCB,
+    NoOp16_2 = 0xF8,
+    NoOp8 = 0xAB,
+  };
+};
+
+namespace UnknownEvent {
+  enum {
+    EventD8 = 0xD8,
+    EventBF = 0xBF,
+    EventC0 = 0xC0,
+    EventF6 = 0xF6,
+  };
+};
+
 TrackChunk::TrackChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int offset)
 : TrackChunk::super(parent, buffer, offset)
 {
@@ -16,33 +33,47 @@ TrackChunk::TrackChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int 
     int paramLen = 0;
     switch (ev.eventType) {
       // 16-bit noop
-      case 0xCB: case 0xF8:
+      case UnusedEvent::NoOp16:
+      case UnusedEvent::NoOp16_2:
         paramLen = 2;
         break;
       // 8-bit noop
-      case 0xAB:
+      case UnusedEvent::NoOp8:
         paramLen = 1;
         break;
       // 5-byte
-      case 0xDC: case 0xE4: case 0xEC: case 0xF0:
+      case TrkEvent::ReplaceLFO1AsPitch:
+      case TrkEvent::ReplaceLFO2AsVolume:
+      case TrkEvent::ReplaceLFO3AsPan:
+      case TrkEvent::ReplaceLFO:
         paramLen = 5;
         break;
       // 4-byte
-      case 0xDD: case 0xE5: case 0xED: case 0xF1:
+      case TrkEvent::SetLFO1DelayFade:
+      case TrkEvent::SetLFO2DelayFade:
+      case TrkEvent::SetLFO3DelayFade:
+      case TrkEvent::SetLFODelayFade:
         paramLen = 4;
         break;
       // 3-byte
       case TrkEvent::Rest24:
-      case 0xAF: case 0xD4: case 0xE2: case 0xEA:
-      case 0xF3:
+      case TrkEvent::SweepSongVolume:
+      case TrkEvent::SweepTune:
+      case TrkEvent::SweepVolume:
+      case TrkEvent::SweepPan:
+      case TrkEvent::SetLFORoute:
         paramLen = 3;
         break;
       // 2-byte
       case TrkEvent::Rest16:
       case TrkEvent::SetDetuneRange:
       case TrkEvent::SetPitchBend:
-      case 0xA8: case 0xB4: case 0xD3: case 0xD5:
-      case 0xD8: case 0xF2:
+      case TrkEvent::SetSwdlAndBank:
+      case TrkEvent::SetEnvelopeDecaySustain:
+      case TrkEvent::AddToTune:
+      case TrkEvent::SetRandomNoteRange:
+      case TrkEvent::SetLFOParam:
+      case UnknownEvent::EventD8:
         paramLen = 2;
         break;
       // 1-byte
@@ -56,14 +87,30 @@ TrackChunk::TrackChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int 
       case TrkEvent::SetPreset:
       case TrkEvent::SetPitchBendRange:
       case TrkEvent::SetVolume:
+      case TrkEvent::AddVolume:
       case TrkEvent::SetExpression:
       case TrkEvent::SetPan:
-      case 0x9C: case 0xA9: case 0xAA: case 0xB1:
-      case 0xB2: case 0xB3: case 0xB5: case 0xB6:
-      case 0xBC: case 0xBE: case 0xBF: case 0xC3:
-      case 0xD0: case 0xD1: case 0xD2: case 0xDF:
-      case 0xE1: case 0xE7: case 0xE9: case 0xEF:
-      case 0xF6:
+      case TrkEvent::SetPan2:
+      case TrkEvent::Segno:
+      case TrkEvent::SetSwdl:
+      case TrkEvent::SetBank:
+      case TrkEvent::SetEnvelopeAttack:
+      case TrkEvent::SetEnvelopeAttackTime:
+      case TrkEvent::SetEnvelopeHold:
+      case TrkEvent::SetEnvelopeFade:
+      case TrkEvent::SetEnvelopeRelease:
+      case TrkEvent::SetNoteVolume:
+      case TrkEvent::SetChannelPan:
+      case TrkEvent::SetChannelVolume:
+      case TrkEvent::SetFineTune:
+      case TrkEvent::AddToFineTune:
+      case TrkEvent::SetCoarseTune:
+      case TrkEvent::SetLFO1ToPitchEnabled:
+      case TrkEvent::SetLFO2ToVolumeEnabled:
+      case TrkEvent::SetLFO3ToPanEnabled:
+      case UnknownEvent::EventBF:
+      case UnknownEvent::EventC0:
+      case UnknownEvent::EventF6:
         paramLen = 1;
         break;
       default:
