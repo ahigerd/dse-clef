@@ -10,12 +10,12 @@ class DSEContext;
 
 struct Sample
 {
-  Sample(const SplitInfo* split, const SampleInfo* info, const SampleData* pcm, DSEContext* synth);
-  Sample(const SampleInfo* info, const SampleData* pcm, DSEContext* synth) : Sample(nullptr, info, pcm, synth) {}
+  Sample(const SplitInfo* split, const SampleInfo* info, SampleData* pcm, DSEContext* synth);
+  Sample(const SampleInfo* info, SampleData* pcm, DSEContext* synth) : Sample(nullptr, info, pcm, synth) {}
 
   DSEContext* context;
-  const SampleInfo* const sampleInfo;
-  const SampleData* const sample;
+  const SampleInfo* sampleInfo;
+  const SampleData* sample;
 };
 
 #endif

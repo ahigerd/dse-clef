@@ -1,12 +1,13 @@
 #include "sample.h"
 #include "dsecontext.h"
+#include "codec/sampledata.h"
 #include "../chunks/wavichunk.h"
 #include "../chunks/prgichunk.h"
 #include "../chunks/pcmdchunk.h"
 #include "../chunks/trackchunk.h"
 #include <iostream>
 
-Sample::Sample(const SplitInfo* split, const SampleInfo* info, const SampleData* pcm, DSEContext* synth)
+Sample::Sample(const SplitInfo* split, const SampleInfo* info, SampleData* pcm, DSEContext* synth)
 : sampleInfo(info), context(synth), sample(pcm)
 {
   if (!info || !sample) {
@@ -22,21 +23,22 @@ Sample::Sample(const SplitInfo* split, const SampleInfo* info, const SampleData*
     pitch = double(sampleInfo->rootKey);
     tune = 0;
   }
-  /*
   int sr = sampleInfo->sampleRate;
-  double baseFreq = TrkEvent::frequency(pitch, tune) * context->sampleRate / sr;
-  cycleWidth = sr / baseFreq; // * sampleInfo->rateScale;
+  pcm->sampleRate = sr;
+  //double baseFreq = TrkEvent::frequency(pitch, tune) * context->sampleRate / sr;
+  //cycleWidth = sr / baseFreq; // * sampleInfo->rateScale;
+  int loopLength;
   switch (sampleInfo->format) {
   case SampleInfo::Pcm8:
-    loopStart = info->loopStart * 4;
+    pcm->loopStart = info->loopStart * 4;
     loopLength = info->loopLength * 4;
     break;
   case SampleInfo::Pcm16:
-    loopStart = info->loopStart * 2;
+    pcm->loopStart = info->loopStart * 2;
     loopLength = info->loopLength * 2;
     break;
   case SampleInfo::Adpcm:
-    loopStart = info->loopStart * 8 - 8;
+    pcm->loopStart = info->loopStart * 8 - 8;
     loopLength = info->loopLength * 8;
     break;
   default:
@@ -44,7 +46,9 @@ Sample::Sample(const SplitInfo* split, const SampleInfo* info, const SampleData*
     sample = nullptr;
     return;
   }
-  sampleLength = loopStart + loopLength;
+  pcm->loopEnd = pcm->loopStart + loopLength;
+  //sampleLength = loopStart + loopLength;
+  /*
   std::cerr << "sample start ls=" << info->loopStart << " ll=" << info->loopLength << " p=" << pitch << " sr=" << sr << " bf=" << baseFreq << " cw=" << cycleWidth
     << " f=" << TrkEvent::frequency(pitch, tune) << std::endl;
     */

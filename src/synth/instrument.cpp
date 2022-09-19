@@ -44,13 +44,13 @@ static const double envDuration[2][128] = {
 };
 
 Instrument::Instrument()
-: context(nullptr), programId(-1), gain(1.0), pan(0.0)
+: context(nullptr), programId(-1), gain(1.0), pan(0.5)
 {
   // initializers only
 }
 
 Instrument::Instrument(const ProgramInfo& preset, DSEContext* synth)
-: context(synth), programId(preset.id), gain(preset.gain / 127.0), pan(preset.pan / 64.0),
+: context(synth), programId(preset.id), gain(preset.gain / 127.0), pan(preset.pan / 128.0),
   splits(preset.splits)
 {
   for (const LFOInfo& lfo : preset.lfos) {
@@ -96,7 +96,7 @@ Note Instrument::startNote(const TrkEvent& ev, double time, int octave, int last
       // it was used to equalize the volume of different samples.
       note.gain = gain * (2.0 - split.volume / 127.0);
     }
-    note.pan = clamp(pan + (split.pan / 64.0), -1.0, 1.0);
+    note.pan = combinePan(pan, (split.pan / 128.0));
     break;
   }
   return note;

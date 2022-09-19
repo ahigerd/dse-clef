@@ -4,17 +4,15 @@
 #include "sample.h"
 #include "../dseutil.h"
 #include "../chunks/trackchunk.h"
+#include "../chunks/wavichunk.h"
+#include "codec/sampledata.h"
 #include <iostream>
+#include <cmath>
 
 Track::Track(const TrackChunk* track, DSEContext* synth)
-: trk(track), context(synth), currentInstrument(nullptr), eventPos(0), tickPos(0), samplePos(0),
-  lastRestLength(0), lastNoteLength(0), octave(4), bendRange(0),
-  volume(16.0), detune(0), pitchBend(0), expression(1.0),
-  pan(0.0), gain(1.0)
+: trk(track), context(synth)
 {
-  timingIter = context->allTimings[trk->trackID()].begin();
-  timingEnd = context->allTimings[trk->trackID()].end();
-  samplesPerTick = context->samplesPerTick(120);
+  internalReset();
 }
 
 #if 0
@@ -249,15 +247,10 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
     case TrkEvent::SetLFO2ToVolumeEnabled:
       unhandled = true; break;
     case TrkEvent::SetPan:
-      pan = ev.paramU8() / 64.0;
+      pan = ev.paramU8() / 128.0;
       break;
     case TrkEvent::AddToPan:
-      pan += ev.paramU8() / 64.0;
-      if (pan < -1.0) {
-        pan = -1.0;
-      } else if (pan > 1.0) {
-        pan = 1.0;
-      }
+      pan = clamp(pan + ev.paramU8() / 128.0, 0.0, 1.0);
       break;
     case TrkEvent::SweepPan:
     case TrkEvent::ReplaceLFO3AsPan:
@@ -283,27 +276,40 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
         note.pitch += (std::rand() / (0.5 * RAND_MAX) - 1.0) * detune;
         lastNoteLength = note.remaining;
         if (lastNoteLength == 0) break;
-        OscillatorEvent* osc = new OscillatorEvent;
-        if (currentInstrument && currentInstrument->programId >= 0x7c) {
-          note.makeNoiseDrum();
-          osc->waveformID = 5;
-          //note.pitch += 24;
+        SequenceEvent* seqEvent;
+        BaseNoteEvent* event;
+        if (currentInstrument && note.sample) {
+          SampleEvent* samp = new SampleEvent;
+          samp->sampleID = note.sample->sample->sampleID;
+          static const double log2inv = 1.0 / std::log(2);
+          samp->pitchBend = std::pow(2.0, (note.pitch - note.sample->sampleInfo->rootKey + pitchBend) / 12.0);
+          event = samp;
+          seqEvent = samp;
         } else {
-          osc->waveformID = 0;
+          OscillatorEvent* osc = new OscillatorEvent;
+          if (currentInstrument && currentInstrument->programId >= 0x7c) {
+            note.makeNoiseDrum();
+            osc->waveformID = 5;
+            note.pitch = 120;
+            note.velocity *= 1.5;
+          } else {
+            osc->waveformID = 0;
+          }
+          osc->frequency = TrkEvent::frequency(note.pitch, pitchBend);
+          event = osc;
+          seqEvent = osc;
         }
-        osc->timestamp = startTime;
-        osc->duration = lastNoteLength * samplesPerTick * context->sampleTime;
-        //std::cerr << "p=" << note.pitch << " d=" << osc->duration << std::endl;
-        osc->volume = (volume / 127.0) * (note.velocity / 127.0);
-        osc->pan = pan;
-        osc->setEnvelope(
+        seqEvent->timestamp = startTime;
+        event->duration = lastNoteLength * samplesPerTick * context->sampleTime;
+        event->volume = (volume / 127.0) * (note.velocity / 127.0);
+        event->pan = combinePan(pan, note.pan);
+        event->setEnvelope(
             note.attackTime * context->sampleTime,
             note.holdTime * context->sampleTime,
             note.decayTime * context->sampleTime,
             note.sustainLevel,
             note.releaseTime * context->sampleTime);
-        osc->frequency = TrkEvent::frequency(note.pitch, pitchBend);
-        nextEvent = osc;
+        nextEvent = seqEvent;
       } else if (ev.isRest()) {
         lastRestLength = ev.duration(lastRestLength);
         int endTick = tickPos + lastRestLength;
@@ -344,7 +350,9 @@ void Track::internalReset()
   detune = 0;
   pitchBend = 0;
   expression = 1.0;
+  pan = 0.5;
   gain = 1.0;
-  pan = 0.0;
   timingIter = context->allTimings[trk->trackID()].begin();
+  timingEnd = context->allTimings[trk->trackID()].end();
+  samplesPerTick = context->samplesPerTick(120);
 }

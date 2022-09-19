@@ -46,7 +46,7 @@ bool dumpSamples(S2WContext* ctx, const std::vector<std::string>& paths, const s
         file.write(reinterpret_cast<const char*>(&sample[0]), sample.size());
         file.close();
       } else {
-        SampleData* sample = pcmd->getSample(info);
+        SampleData* sample = pcmd->getSample(iter.first, info);
         sstr << outputPath << "/sample" << iter.first << ".wav";
         std::string outputFilename = sstr.str();
         std::cout << "Writing " << outputFilename << std::endl;

@@ -2,6 +2,7 @@
 #include "dsefile.h"
 #include "synth/instrument.h"
 #include "synth/sample.h"
+#include "codec/sampledata.h"
 #include "chunks/trackchunk.h"
 #include "chunks/songchunk.h"
 #include "chunks/prgichunk.h"
@@ -9,6 +10,7 @@
 #include "chunks/wavichunk.h"
 #include "chunks/pcmdchunk.h"
 #include <exception>
+#include <iostream>
 
 DSEContext::DSEContext(S2WContext* ctx, double sampleRate, std::unique_ptr<DSEFile> _smdl, std::unique_ptr<DSEFile> _swdl, DSEFile* bank)
 : SynthContext(ctx, sampleRate, 2), //basePhasePerSample(1.0 / sampleRate),
@@ -137,7 +139,7 @@ const Sample* DSEContext::findSample(const SplitInfo& split)
   }
   if (data && pcmSource) {
     try {
-      pcm = pcmSource->getSample(*data);
+      pcm = pcmSource->getSample(index, *data);
     } catch (...) {
       pcm = nullptr;
     }

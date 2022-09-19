@@ -14,8 +14,8 @@ public:
 
   ConstVectorSlice<uint8_t> getRawSample(uint32_t offset, uint32_t length) const;
   ConstVectorSlice<uint8_t> getRawSample(const SampleInfo& info) const;
-  SampleData* getSample(uint8_t format, uint32_t offset, uint32_t length);
-  SampleData* getSample(const SampleInfo& info);
+  SampleData* getSample(uint64_t sampleID, uint8_t format, uint32_t offset, uint32_t length);
+  SampleData* getSample(uint64_t sampleID, const SampleInfo& info);
 };
 
 #endif

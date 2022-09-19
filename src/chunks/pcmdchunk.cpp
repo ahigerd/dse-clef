@@ -26,29 +26,29 @@ ConstVectorSlice<uint8_t> PcmdChunk::getRawSample(const SampleInfo& info) const
   return getRawSample(info.sampleStart, info.byteLength());
 }
 
-SampleData* PcmdChunk::getSample(uint8_t format, uint32_t offset, uint32_t length)
+SampleData* PcmdChunk::getSample(uint64_t sampleID, uint8_t format, uint32_t offset, uint32_t length)
 {
-  SampleData* sample = parent()->context()->getSample(offset);
+  SampleData* sample = parent()->context()->getSample(sampleID);
   if (sample) {
     return sample;
   }
   offset += 0x10;
   if (format == SampleInfo::Pcm8) {
     PcmCodec codec(parent()->context(), 8);
-    return codec.decode(ConstVectorSlice<uint8_t>(data, offset, length));
+    return codec.decode(ConstVectorSlice<uint8_t>(data, offset, length), sampleID);
   } else if (format == SampleInfo::Pcm16) {
     // TODO: This assumes that PCM16 samples are stored little-endian
     PcmCodec codec(parent()->context(), 16, 1, false);
-    return codec.decode(ConstVectorSlice<uint8_t>(data, offset, length));
+    return codec.decode(ConstVectorSlice<uint8_t>(data, offset, length), sampleID);
   } else if (format == SampleInfo::Adpcm) {
     AdpcmCodec codec(parent()->context(), AdpcmCodec::DSP);
-    return codec.decode(ConstVectorSlice<uint8_t>(data, offset, length));
+    return codec.decode(ConstVectorSlice<uint8_t>(data, offset, length), sampleID);
   } else {
     throw std::runtime_error("unknown sample format " + std::to_string(format));
   }
 }
 
-SampleData* PcmdChunk::getSample(const SampleInfo& info)
+SampleData* PcmdChunk::getSample(uint64_t sampleID, const SampleInfo& info)
 {
-  return getSample(info.format, info.sampleStart, info.byteLength());
+  return getSample(sampleID, info.format, info.sampleStart, info.byteLength());
 }
