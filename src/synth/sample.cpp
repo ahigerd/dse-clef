@@ -5,6 +5,7 @@
 #include "../chunks/prgichunk.h"
 #include "../chunks/pcmdchunk.h"
 #include "../chunks/trackchunk.h"
+#include <cmath>
 #include <iostream>
 
 Sample::Sample(const SplitInfo* split, const SampleInfo* info, SampleData* pcm, DSEContext* synth)
@@ -16,17 +17,13 @@ Sample::Sample(const SplitInfo* split, const SampleInfo* info, SampleData* pcm, 
   double pitch, tune;
   if (split) {
     pitch = double(split->rootKey);
-    //tune = (split->coarseTune - sampleInfo->coarseTune) + ((split->fineTune - sampleInfo->fineTune) / 255.0);
-    //tune = split->transpose + (split->fineTune / 255.0);
-    tune = 0;
+    tune = split->transpose + (split->coarseTune - sampleInfo->coarseTune) + ((split->fineTune - sampleInfo->fineTune) / 255.0);
   } else {
     pitch = double(sampleInfo->rootKey);
     tune = 0;
   }
   int sr = sampleInfo->sampleRate;
-  pcm->sampleRate = sr;
-  //double baseFreq = TrkEvent::frequency(pitch, tune) * context->sampleRate / sr;
-  //cycleWidth = sr / baseFreq; // * sampleInfo->rateScale;
+  pcm->sampleRate = sr * std::pow(2.0, tune / 12.0);
   int loopLength;
   switch (sampleInfo->format) {
   case SampleInfo::Pcm8:
@@ -47,9 +44,4 @@ Sample::Sample(const SplitInfo* split, const SampleInfo* info, SampleData* pcm, 
     return;
   }
   pcm->loopEnd = pcm->loopStart + loopLength;
-  //sampleLength = loopStart + loopLength;
-  /*
-  std::cerr << "sample start ls=" << info->loopStart << " ll=" << info->loopLength << " p=" << pitch << " sr=" << sr << " bf=" << baseFreq << " cw=" << cycleWidth
-    << " f=" << TrkEvent::frequency(pitch, tune) << std::endl;
-    */
 }

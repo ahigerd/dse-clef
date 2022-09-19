@@ -60,9 +60,9 @@ Instrument::Instrument(const ProgramInfo& preset, DSEContext* synth)
   }
 }
 
-Note Instrument::startNote(const TrkEvent& ev, double time, int octave, int lastLength) const
+Note Instrument::startNote(const TrkEvent& ev, int octave, int lastLength) const
 {
-  Note note(ev, time, octave, lastLength);
+  Note note(ev, octave, lastLength);
   for (const SplitInfo& split : splits) {
     if (note.pitch < split.lowKey || note.pitch > split.highKey ||
         note.velocity < split.lowVelocity || note.velocity > split.highVelocity) {
@@ -77,12 +77,12 @@ Note Instrument::startNote(const TrkEvent& ev, double time, int octave, int last
       }
       const double* table = envDuration[tableIndex];
       note.useEnvelope = true;
-      note.attackTime = note.startTime + table[split.attackTime] * mult;
+      note.attackTime = table[split.attackTime] * mult;
       note.attackLevel = split.attackLevel / 127.0;
-      note.holdTime = note.attackTime + table[split.holdTime] * mult;
-      note.decayTime = note.holdTime + table[split.decayTime] * mult;
+      note.holdTime = table[split.holdTime] * mult;
+      note.decayTime = table[split.decayTime] * mult;
       note.sustainLevel = split.sustainLevel / 127.0;
-      note.fadeTime = note.decayTime + table[split.fadeTime] * mult;
+      note.fadeTime = table[split.fadeTime] * mult;
       note.releaseTime = table[split.releaseTime] * mult;
       note.bendRange = split.bendRange;
     }

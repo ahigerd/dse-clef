@@ -271,13 +271,14 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
         double startTime = samplePos * context->sampleTime;
         octave += ev.octaveOffset();
         Note note = currentInstrument ?
-          currentInstrument->startNote(ev, 0, octave, lastNoteLength) :
-          Note(ev, 0, octave, lastNoteLength);
+          currentInstrument->startNote(ev, octave, lastNoteLength) :
+          Note(ev, octave, lastNoteLength);
         note.pitch += (std::rand() / (0.5 * RAND_MAX) - 1.0) * detune;
-        lastNoteLength = note.remaining;
+        lastNoteLength = note.duration;
         if (lastNoteLength == 0) break;
         SequenceEvent* seqEvent;
         BaseNoteEvent* event;
+        double gain = currentInstrument ? currentInstrument->gain : 1.0;
         if (currentInstrument && note.sample) {
           SampleEvent* samp = new SampleEvent;
           samp->sampleID = note.sample->sample->sampleID;
@@ -285,6 +286,8 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
           samp->pitchBend = std::pow(2.0, (note.pitch - note.sample->sampleInfo->rootKey + pitchBend) / 12.0);
           event = samp;
           seqEvent = samp;
+
+          gain *= note.sample->sampleInfo->volume / 127.0;
         } else {
           OscillatorEvent* osc = new OscillatorEvent;
           if (currentInstrument && currentInstrument->programId >= 0x7c) {
@@ -301,14 +304,14 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
         }
         seqEvent->timestamp = startTime;
         event->duration = lastNoteLength * samplesPerTick * context->sampleTime;
-        event->volume = (volume / 127.0) * (note.velocity / 127.0);
+        event->volume = 2.0 * gain * (volume / 127.0) * (note.velocity / 127.0);
         event->pan = combinePan(pan, note.pan);
         event->setEnvelope(
-            note.attackTime * context->sampleTime,
-            note.holdTime * context->sampleTime,
-            note.decayTime * context->sampleTime,
+            note.attackTime * .001,
+            note.holdTime * .001,
+            note.decayTime * .001,
             note.sustainLevel,
-            note.releaseTime * context->sampleTime);
+            note.releaseTime * .001);
         nextEvent = seqEvent;
       } else if (ev.isRest()) {
         lastRestLength = ev.duration(lastRestLength);

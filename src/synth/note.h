@@ -7,26 +7,21 @@ struct Sample;
 
 struct Note
 {
-  Note(const TrkEvent& ev, double time, int octave, int lastLength);
+  Note(const TrkEvent& ev, int octave, int lastLength);
   Note(const Note& other) = default;
   Note(Note&& other) = default;
   Note& operator=(const Note& other) = default;
   Note& operator=(Note&& other) = default;
 
   int noteNumber;
-  int remaining;
+  int duration;
   int bendRange;
   bool loopSample;
   bool useEnvelope;
   const Sample* sample;
 
-  double startTime;
-  double releasedAt;
-  double releaseLevel;
-
   double pitch;
   double velocity;
-  double phase;
   double gain;
   double pan;
   double attackLevel;
@@ -37,8 +32,6 @@ struct Note
   double fadeTime;
   double releaseTime;
 
-  double envelope(double time) const;
-  void release(double time);
   void makeNoiseDrum();
 };
 

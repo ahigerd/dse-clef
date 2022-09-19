@@ -19,7 +19,7 @@ struct Instrument
   std::vector<LFO> lfos;
   std::vector<SplitInfo> splits;
 
-  Note startNote(const TrkEvent& ev, double time, int octave, int lastLength) const;
+  Note startNote(const TrkEvent& ev, int octave, int lastLength) const;
 };
 
 #endif
