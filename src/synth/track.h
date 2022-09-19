@@ -29,7 +29,7 @@ struct Track : public ITrack
 
 protected:
   virtual std::shared_ptr<SequenceEvent> readNextEvent();
-  virtual void internalReset();
+  void internalReset();
 };
 
 #endif

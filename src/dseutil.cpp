@@ -30,7 +30,7 @@ std::string hexdumpToString(const std::vector<T>& buffer, const std::string& pre
     int len = ss.tellp();
     ss << std::hex << std::setfill('0') << std::setw(wordlen) << uint32_t(ch);
     len = ss.tellp() - len;
-    result += (cols % 32 ? " " : "\n" + prefix) + ss.str().substr(len - wordlen);
+    result += ((cols % 32) ? " " : "\n" + prefix) + ss.str().substr(len - wordlen);
     cols += wordlen;
   }
   return result.substr(1);
