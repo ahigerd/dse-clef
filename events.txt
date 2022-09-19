@@ -1,0 +1,226 @@
+E# Name                     Len
+-- ------------------------ ---
+90 RepeatLastPause          0
+91 PauseAndAdd              1
+    uint8: duration
+92 Pause8                   1
+    uint8: duration
+93 Pause16                  2
+    uint16: duration
+94 Pause24                  3
+    uint24: duration
+95 PauseWhileActive         1
+    uint8: polling interval
+96 StopInvalidTrack         0
+97 StopInvalidTrack         0
+98 EndOfTrack               0
+99 SetLoopPoint             0
+9a StopInvalidTrack         0
+9b StopInvalidTrack         0
+9c Segno                    1
+    uint8: number of repeats
+9d DalSegno                 0
+9e ToCoda                   0
+9f StopInvalidTrack         0
+a0 SetOctave                1
+    uint8: octave
+a1 AddOctave                1
+    sint8: octaves
+a2 StopInvalidTrack         0
+a3 StopInvalidTrack         0
+a4 SetTempo                 1
+    uint8: BPM
+a5 SetTempo2                1
+    uint8: BPM
+a6 StopInvalidTrack         0
+a7 StopInvalidTrack         0
+a8 SetSwdlAndBank           2
+    uint8: swdl
+    uint8: bank
+a9 SetSwdl                  1
+    uint8: swdl
+aa SetBank                  1
+    uint8: bank
+ab NoOp8                    1
+ac SetProgram               1
+    uint8: program ID
+ad StopInvalidTrack         0
+ae StopInvalidTrack         0
+af SweepSongVolume          3
+    uint16: sweep rate
+    uint8: target volume
+b0 DisableEnvelope          0
+b1 SetEnvelopeAttack        1
+    uint8: attack
+b2 SetEnvelopeAttackTime    1
+    uint8: time
+b3 SetEnvelopeHold          1
+    uint8: hold
+b4 SetEnvelopeDecaySustain  2
+    uint8: decay (0xFF: don't change)
+    uint8: sustain (0xFF: don't change)
+b5 SetEnvelopeFade          1
+    uint8: fade
+b6 SetEnvelopeRelease       1
+    uint8: release
+b7 StopInvalidTrack         0
+b8 StopInvalidTrack         0
+b9 StopInvalidTrack         0
+ba StopInvalidTrack         0
+bb StopInvalidTrack         0
+bc SetNoteVolume            1
+    uint8: volume
+bd StopInvalidTrack         0
+be SetChannelPan            1
+    uint8: pan
+bf EventBF                  1
+    unknown
+    -- sets or clears flag bit 0
+c0 EventC0                  1
+    unknown
+    -- sets flag bit 1
+c1 StopInvalidTrack         0
+c2 StopInvalidTrack         0
+c3 SetChannelVolume         1
+    uint8: volume
+c4 StopInvalidTrack         0
+c5 StopInvalidTrack         0
+c6 StopInvalidTrack         0
+c7 StopInvalidTrack         0
+c8 StopInvalidTrack         0
+c9 StopInvalidTrack         0
+ca StopInvalidTrack         0
+cb NoOp16                   2
+cc StopInvalidTrack         0
+cd StopInvalidTrack         0
+ce StopInvalidTrack         0
+cf StopInvalidTrack         0
+d0 SetFineTune              1
+    uint8: tune
+d1 AddToFineTune            1
+    uint8: tune change
+d2 SetCoarseTune            1
+    uint8: tune
+d3 AddToTune                2
+    uint16: tune
+d4 SweepTune                3
+    uint16: sweep rate
+    uint8: target tune
+d5 SetRandomNoteRange       2
+    uint8: min random range
+    uint8: max random range
+d6 SetDetuneRange           2
+    uint16: maximum random detune
+d7 SetPitchBend             2
+    sint16: bend amount (see 0xdb)
+d8 EventD8                  2
+    uint16: ???
+    -- modifies an unused parameter
+d9 StopInvalidTrack         0
+da StopInvalidTrack         0
+db SetPitchBendRange        1
+    uint8: maximum bend in semitones
+dc ReplaceLFO1AsPitch       5
+    TODO
+dd SetLFO1DelayFade         4
+    TODO
+de StopInvalidTrack         0
+df SetLFO1ToPitchEnabled    1
+    bool: if true, turns on LFO1 and connects it to pitch
+          if false, disables LFO1
+e0 SetTrackVol              1
+    uint8: volume
+e1 AddToTrackVol            1
+    uint8: volume change
+e2 SweepTrackVol            3
+    uint16: sweep rate
+    uint8: target volume
+e3 SetExpression            1
+    uint8: expression
+e4 ReplaceLFO2AsVolume      5
+    TODO
+e5 SetLFO2DelayFade         4
+    TODO
+e6 StopInvalidTrack         0
+e7 SetLFO2ToVolumeEnabled   1
+    bool: if true, turns on LFO2 and connects it to volume
+          if false, disables LFO2
+e8 SetPan                   1
+    uint8: pan
+e9 AddToPan                 1
+    uint8: pan
+ea SweepPan                 3
+    uint16: sweep rate
+    uint8: target pan
+eb StopInvalidTrack         0
+ec ReplaceLFO3AsPan         5
+    TODO
+ed SetLFO3DelayFade         4
+    TODO
+ee StopInvalidTrack         0
+ef SetLFO3ToPanEnabled      1
+    bool: if true, turns on LFO3 and connects it to pan
+          if false, disables LFO3
+f0 ReplaceLFO               5
+    uint16: LFO rate in Hz
+    uint16: LFO depth
+    uint8: waveform selection (see 0xf2)
+    LFO delay and LFO fade time are set to 0
+f1 SetLFODelayFade          4
+    uint16: LFO delay
+    uint16: LFO fade time
+    See below for more details
+f2 SetLFOParam              2
+    uint8: parameter selection
+        1: target LFO
+        2: enabled
+        3: route (see 0xf3)
+        4: waveform selection
+            0: none
+            1: square
+            2: triangle
+            3: sine
+            4: unknown
+            5: saw
+            6: noise
+            7: random
+        5: LFO rate (units depend on waveform)
+            TODO: determine exact scaling factors
+        6: LFO depth
+        7: LFO delay / 20
+        8: LFO delay fine
+        9: LFO delay coarse
+        A: LFO fade / 20
+    sint8: new value
+f3 SetLFORoute              3
+    uint8: target LFO
+    uint8: enabled
+    uint8: route
+        0: disconnected
+        1: pitch
+        2: volume
+        3: pan
+        4: filter
+f4 StopInvalidTrack         0
+f5 StopInvalidTrack         0
+f6 EventF6                  1
+    unknown
+f7 StopInvalidTrack         0
+f8 NoOp16_2                 2
+f9 StopInvalidTrack         0
+fa StopInvalidTrack         0
+fb StopInvalidTrack         0
+fc StopInvalidTrack         0
+fd StopInvalidTrack         0
+fe StopInvalidTrack         0
+ff StopInvalidTrack         0
+
+LFO delay specifies a time in seconds before the LFO takes effect.
+It currently appears that combining a nonzero delay with a fade-out may
+result in the LFO suddenly jumping from 0 to its full depth immediately
+after the delay period before fading out again.
+
+LFO fade specifies a fade in/out time in seconds after the LFO delay time.
+A negative value means that the LFO's depth starts at 0 and increases to
+its full value over the fade time. A positive value means that the LFO's
+depth starts at its full value and decreases to 0 over the fade time.
