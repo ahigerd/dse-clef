@@ -1,4 +1,7 @@
 #include "instrument.h"
+#include "track.h"
+#include "sample.h"
+#include "codec/sampledata.h"
 #include "dsecontext.h"
 #include "utility.h"
 #include "../chunks/wavichunk.h"
@@ -43,8 +46,8 @@ static const double envDuration[2][128] = {
   }
 };
 
-Instrument::Instrument()
-: context(nullptr), programId(-1), gain(1.0), pan(0.5)
+Instrument::Instrument(DSEContext* synth)
+: context(synth), programId(-1), gain(1.0), pan(0.5)
 {
   // initializers only
 }
@@ -60,12 +63,34 @@ Instrument::Instrument(const ProgramInfo& preset, DSEContext* synth)
   }
 }
 
-Note Instrument::startNote(const TrkEvent& ev, int octave, int lastLength) const
+BaseNoteEvent* Instrument::makeEvent(Track* track, const TrkEvent& ev) const
 {
-  Note note(ev, octave, lastLength);
+  int eventDuration = ev.duration(track->lastNoteLength);
+  track->lastNoteLength = eventDuration;
+  if (!eventDuration) {
+    return nullptr;
+  }
+
+  int noteNumber = ev.midiNote(track->octave);
+  int bendRange = 2;
+  const Sample* sample = nullptr;
+  double pitch = noteNumber;
+  int velocity = ev.velocity();
+  double noteGain = 1.0;
+  double notePan = pan;
+
+  bool useEnvelope = false;
+  double attackLevel = 1.0;
+  double attackTime = 0;
+  double holdTime = 0;
+  double decayTime = 0;
+  double sustainLevel = 0;
+  double fadeTime = HUGE_VAL;
+  double releaseTime = 0.08;
+
   for (const SplitInfo& split : splits) {
-    if (note.pitch < split.lowKey || note.pitch > split.highKey ||
-        note.velocity < split.lowVelocity || note.velocity > split.highVelocity) {
+    if (noteNumber < split.lowKey || noteNumber > split.highKey ||
+        velocity < split.lowVelocity || velocity > split.highVelocity) {
       continue;
     }
     if (split.envelope) {
@@ -76,28 +101,79 @@ Note Instrument::startNote(const TrkEvent& ev, int octave, int lastLength) const
         mult = (double)split.envelopeMult;
       }
       const double* table = envDuration[tableIndex];
-      note.useEnvelope = true;
-      note.attackTime = table[split.attackTime] * mult;
-      note.attackLevel = split.attackLevel / 127.0;
-      note.holdTime = table[split.holdTime] * mult;
-      note.decayTime = table[split.decayTime] * mult;
-      note.sustainLevel = split.sustainLevel / 127.0;
-      note.fadeTime = table[split.fadeTime] * mult;
-      note.releaseTime = table[split.releaseTime] * mult;
-      note.bendRange = split.bendRange;
+      useEnvelope = true;
+      attackTime = table[split.attackTime] * mult * .001;
+      attackLevel = split.attackLevel / 127.0;
+      holdTime = table[split.holdTime] * mult * .001;
+      decayTime = table[split.decayTime] * mult * .001;
+      sustainLevel = split.sustainLevel / 127.0;
+      fadeTime = table[split.fadeTime] * mult * .001;
+      releaseTime = table[split.releaseTime] * mult * .001;
+      bendRange = split.bendRange;
     }
-    note.sample = context ? context->findSample(split) : nullptr;
-    if (note.sample) {
-      // If using samples honor pan, tuning, and volume
-      note.gain = gain * (split.volume / 127.0);
-      //note.pitch -= split.transpose + (split.fineTune / 255.0);
+    sample = (false && context) ? context->findSample(split) : nullptr;
+    if (sample) {
+      // If using samples honor volume as-is
+      noteGain = gain * (split.volume / 127.0);
+      pitch -= sample->sampleInfo->rootKey;
     } else {
-      // If using debug waves, honor pan and invert volume, assuming
-      // it was used to equalize the volume of different samples.
-      note.gain = gain * (2.0 - split.volume / 127.0);
+      // If using debug waves, invert volume, assuming it was used
+      // to equalize the volume of different samples.
+      noteGain = gain * (2.0 - split.volume / 127.0);
     }
-    note.pan = combinePan(pan, (split.pan / 128.0));
+    // TODO: does split pan replace instrument pan or combine with it?
+    notePan = combinePan(notePan, (split.pan / 128.0));
     break;
   }
-  return note;
+
+  pitch += track->pitchBend * bendRange;
+  if (track->detune) {
+    pitch += (std::rand() / (0.5 * RAND_MAX) - 1.0) * track->detune;
+  }
+
+  BaseNoteEvent* event = nullptr;
+  if (sample) {
+    SampleEvent* samp = new SampleEvent;
+    samp->sampleID = sample->sample->sampleID;
+    samp->pitchBend = std::pow(2.0, pitch / 12.0);
+    event = samp;
+  } else {
+    OscillatorEvent* osc = new OscillatorEvent;
+    if (programId >= 0x7c) {
+      osc->waveformID = 5;
+      useEnvelope = true;
+      attackTime = 0;
+      attackLevel = 1.0;
+      holdTime = 0;
+      decayTime = 0.02;
+      sustainLevel = 0.3;
+      fadeTime = 0.5;
+      releaseTime = 0.08;
+      pitch = 120;
+      velocity *= 1.5;
+    } else {
+      // TODO: PSG channels
+      osc->waveformID = 0;
+    }
+    osc->frequency = TrkEvent::frequency(pitch, 0);
+    event = osc;
+  }
+
+  noteGain = noteGain * (velocity / 127.0) * track->totalGain;
+  event->timestamp = track->samplePos * context->sampleTime;
+  event->duration = eventDuration * track->samplesPerTick * context->sampleTime;
+  event->volume = noteGain * noteGain;
+  event->pan = combinePan(track->pan, notePan);
+  if (useEnvelope) {
+    event->setEnvelope(
+        attackLevel,
+        attackTime,
+        holdTime,
+        decayTime,
+        sustainLevel,
+        fadeTime,
+        releaseTime);
+  }
+
+  return event;
 }

@@ -82,6 +82,7 @@ std::string PrgiChunk::debug(const std::string& prefix) const
       ss << prefix << "\tSplit: (" << int(split.lowKey) << "-" << int(split.highKey) << ")x("
         << int(split.lowVelocity) << "-" << int(split.highVelocity) << ")" << std::endl;
       ss << prefix << "\t\tSample: " << split.sampleIndex << std::endl;
+      ss << prefix << "\t\tVolume: " << (int)split.volume << std::endl;
       ss << prefix << "\t\tRoot: " << (int)split.rootKey << " (transpose " << (int)split.transpose << ")" << std::endl;
       ss << prefix << "\t\tTune: " << (int)split.coarseTune << " / " << (int)split.fineTune << std::endl;
       ss << hexdumpToString((std::vector<uint8_t>)split.data, prefix + "\t\t") << std::endl;

@@ -47,6 +47,10 @@ DSEContext::DSEContext(S2WContext* ctx, double sampleRate, std::unique_ptr<DSEFi
 
   ticksPerBeat = song->ticksPerBeat();
   tempos[0] = 120;
+
+  for (int i = 0; i < 16; i++) {
+    channelGain.push_back(1.0);
+  }
 }
 
 DSEContext::~DSEContext()
@@ -156,7 +160,7 @@ const Instrument* DSEContext::findInstrument(int presetId)
     return iter->second.get();
   }
   if (presetId < 0) {
-    Instrument* debugWave = new Instrument;
+    Instrument* debugWave = new Instrument(this);
     instruments.emplace(presetId, debugWave);
     return debugWave;
   }

@@ -21,38 +21,7 @@ bool Track::processEvent(std::vector<int16_t>& buffer)
   const TrkEvent& ev = trk->events[eventPos];
   bool mute = false; // (trk->trackID() != 6);
 
-  if (ev.eventType == TrkEvent::SetOctave) {
-    octave = ev.paramU8();
-  } else if (ev.eventType == TrkEvent::AddOctave) {
-    octave += ev.param8();
-  } else if (ev.eventType == TrkEvent::SetVolume) {
-    volume = ev.paramU8() / 127.0 * 16.0;
-  } else if (ev.eventType == TrkEvent::SetExpression) {
-    expression = ev.paramU8() / 127.0;
-  } else if (ev.eventType == TrkEvent::SetDetuneRange) {
-    detune = ev.param16() / 255.0;
-  } else if (ev.eventType == TrkEvent::SetPitchBend) {
-    // Interpretation? Assuming it matches default MIDI range
-    // Notes say 500 = 1 semitone and negative means up
-    pitchBend = ev.param16BE() / -4000.0;
-    // Disassembly says:
-    //   FUN_02073c90(ChanStructPtr, (int)(((uint)EventDataPtr[1] + (uint)*EventDataPtr * 0x100) * 0x10000) >> 0x10);
-  } else if (ev.eventType == TrkEvent::SetPitchBendRange) {
-    bendRange = ev.paramU8();
-  } else if (ev.eventType == TrkEvent::SetPan) {
-    rightGain = ev.paramU8() / 64.0;
-    leftGain = 2.0 - rightGain;
-  } else if (ev.eventType == TrkEvent::SetPreset) {
-    currentInstrument = context->findInstrument(ev.paramU8());
-  } else if (ev.isPlayNote() && !mute) {
-    double startTime = samplePos * context->sampleTime;
-    octave += ev.octaveOffset();
-    Note note = currentInstrument ?
-      currentInstrument->startNote(ev, startTime, octave, lastNoteLength) :
-      Note(ev, startTime, octave, lastNoteLength);
-    note.pitch += (std::rand() / (0.5 * RAND_MAX) - 1.0) * detune;
-    lastNoteLength = note.remaining;
-
+  if (ev.isPlayNote() && !mute) {
     // TODO: add configuration option to use debug instruments
     /*
     if (currentInstrument && currentInstrument->programId >= 0x7c) {
@@ -96,7 +65,6 @@ bool Track::processEvent(std::vector<int16_t>& buffer)
       }
       for (int i = notes.size() - 1; i >= 0; --i) {
         Note& note = notes[i];
-        /*
         double freq = TrkEvent::frequency(note.pitch, pitchBend * (bendRange ? bendRange : note.bendRange));
         double phasePerSample = context->basePhasePerSample * freq;
         double mag = baseMag * note.velocity;
@@ -144,15 +112,9 @@ bool Track::processEvent(std::vector<int16_t>& buffer)
         } else if (note.remaining <= 0) {
           note.release(ms);
         }
-        */
       }
-      samplePos += sampleLen;
-      tickPos = nextTick;
     }
   }
-
-  ++eventPos;
-  return eventPos >= trk->events.size();
 }
 #endif
 
@@ -209,15 +171,21 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
     case TrkEvent::SetEnvelopeRelease:
     case TrkEvent::SetNoteVolume:
     case TrkEvent::SetChannelPan:
+      unhandled = true; break;
     case TrkEvent::SetChannelVolume:
+      context->channelGain[trk->channelID()] = ev.param16() / 127.0;
+      break;
     case TrkEvent::SetFineTune:
+      unhandled = true; break;
     case TrkEvent::AddToFineTune:
     case TrkEvent::SetCoarseTune:
     case TrkEvent::AddToTune:
     case TrkEvent::SweepTune:
     case TrkEvent::SetRandomNoteRange:
-    case TrkEvent::SetDetuneRange:
       unhandled = true; break;
+    case TrkEvent::SetDetuneRange:
+      detune = ev.param16() / 255.0;
+      break;
     case TrkEvent::SetPitchBend:
       // Interpretation? Assuming it matches default MIDI range
       // Notes say 500 = 1 semitone and negative means up
@@ -233,14 +201,18 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
     case TrkEvent::SetLFO1ToPitchEnabled:
       unhandled = true; break;
     case TrkEvent::SetVolume:
-      volume = ev.paramU8() / 127.0 * 16.0;
+      volume = ev.paramU8() / 127.0;
+      updateTotalGain();
       break;
     case TrkEvent::AddVolume:
-      volume += ev.paramU8() / 127.0 * 16.0;
+      volume += ev.paramU8() / 127.0;
+      updateTotalGain();
       break;
     case TrkEvent::SweepVolume:
+      unhandled = true; break;
     case TrkEvent::SetExpression:
       expression = ev.paramU8() / 127.0;
+      updateTotalGain();
       break;
     case TrkEvent::ReplaceLFO2AsVolume:
     case TrkEvent::SetLFO2DelayFade:
@@ -268,51 +240,13 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
     case TrkEvent::Rest24:
     default:
       if (ev.isPlayNote()) {
-        double startTime = samplePos * context->sampleTime;
         octave += ev.octaveOffset();
-        Note note = currentInstrument ?
-          currentInstrument->startNote(ev, octave, lastNoteLength) :
-          Note(ev, octave, lastNoteLength);
-        note.pitch += (std::rand() / (0.5 * RAND_MAX) - 1.0) * detune;
-        lastNoteLength = note.duration;
-        if (lastNoteLength == 0) break;
-        SequenceEvent* seqEvent;
-        BaseNoteEvent* event;
-        double gain = currentInstrument ? currentInstrument->gain : 1.0;
-        if (currentInstrument && note.sample) {
-          SampleEvent* samp = new SampleEvent;
-          samp->sampleID = note.sample->sample->sampleID;
-          static const double log2inv = 1.0 / std::log(2);
-          samp->pitchBend = std::pow(2.0, (note.pitch - note.sample->sampleInfo->rootKey + pitchBend) / 12.0);
-          event = samp;
-          seqEvent = samp;
-
-          gain *= note.sample->sampleInfo->volume / 127.0;
+        if (!currentInstrument) {
+          std::cerr << "No inst" << std::endl;
+          lastNoteLength = ev.duration(lastNoteLength);
         } else {
-          OscillatorEvent* osc = new OscillatorEvent;
-          if (currentInstrument && currentInstrument->programId >= 0x7c) {
-            note.makeNoiseDrum();
-            osc->waveformID = 5;
-            note.pitch = 120;
-            note.velocity *= 1.5;
-          } else {
-            osc->waveformID = 0;
-          }
-          osc->frequency = TrkEvent::frequency(note.pitch, pitchBend);
-          event = osc;
-          seqEvent = osc;
+          nextEvent = currentInstrument->makeEvent(this, ev);
         }
-        seqEvent->timestamp = startTime;
-        event->duration = lastNoteLength * samplesPerTick * context->sampleTime;
-        event->volume = 2.0 * gain * (volume / 127.0) * (note.velocity / 127.0);
-        event->pan = combinePan(pan, note.pan);
-        event->setEnvelope(
-            note.attackTime * .001,
-            note.holdTime * .001,
-            note.decayTime * .001,
-            note.sustainLevel,
-            note.releaseTime * .001);
-        nextEvent = seqEvent;
       } else if (ev.isRest()) {
         lastRestLength = ev.duration(lastRestLength);
         int endTick = tickPos + lastRestLength;
@@ -341,7 +275,7 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
 
 void Track::internalReset()
 {
-  currentInstrument = nullptr;
+  currentInstrument = context->findInstrument(-1);
   eventPos = 0;
   tickPos = 0;
   samplePos = 0;
@@ -349,13 +283,23 @@ void Track::internalReset()
   lastNoteLength = 0;
   octave = 4;
   bendRange = 0;
-  volume = 16.0;
+  volume = 1.0;
   detune = 0;
   pitchBend = 0;
   expression = 1.0;
   pan = 0.5;
-  gain = 1.0;
   timingIter = context->allTimings[trk->trackID()].begin();
   timingEnd = context->allTimings[trk->trackID()].end();
   samplesPerTick = context->samplesPerTick(120);
+  updateTotalGain();
+}
+
+void Track::updateTotalGain()
+{
+  totalGain = channelGain() * volume * expression;
+}
+
+double Track::channelGain() const
+{
+  return context->channelGain[trk->channelID()];
 }

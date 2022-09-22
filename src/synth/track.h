@@ -2,7 +2,6 @@
 #define SYNTH_TRACK_H
 
 #include "seq/itrack.h"
-#include "note.h"
 #include <vector>
 #include <utility>
 #include <set>
@@ -21,7 +20,7 @@ struct Track : public ITrack
   std::set<int>::const_iterator timingIter, timingEnd;
 
   int lastRestLength, lastNoteLength, octave, bendRange;
-  double volume, detune, pitchBend, expression, pan, gain;
+  double volume, detune, pitchBend, expression, pan, totalGain;
   double samplesPerTick;
 
   virtual bool isFinished() const;
@@ -30,6 +29,9 @@ struct Track : public ITrack
 protected:
   virtual std::shared_ptr<SequenceEvent> readNextEvent();
   void internalReset();
+  void updateTotalGain();
+  static double combineGain3(double g1, double g2, double g3);
+  double channelGain() const;
 };
 
 #endif

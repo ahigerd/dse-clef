@@ -1,15 +1,17 @@
 #ifndef SYNTH_INSTRUMENT_H
 #define SYNTH_INSTRUMENT_H
 
+#include "synth/iinstrument.h"
+#include "seq/sequenceevent.h"
 #include "../chunks/prgichunk.h"
-#include "note.h"
 #include "lfo.h"
 class TrkEvent;
 class DSEContext;
+class Track;
 
-struct Instrument
+struct Instrument : public DefaultInstrument
 {
-  Instrument();
+  Instrument(DSEContext* synth);
   Instrument(const ProgramInfo& preset, DSEContext* synth);
 
   DSEContext* context;
@@ -19,7 +21,7 @@ struct Instrument
   std::vector<LFO> lfos;
   std::vector<SplitInfo> splits;
 
-  Note startNote(const TrkEvent& ev, int octave, int lastLength) const;
+  BaseNoteEvent* makeEvent(Track* track, const TrkEvent& ev) const;
 };
 
 #endif
