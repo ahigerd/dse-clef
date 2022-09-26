@@ -160,6 +160,10 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
       break;
     case TrkEvent::SetPreset:
       currentInstrument = context->findInstrument(ev.paramU8());
+      if (!context->getInstrument(ev.paramU8())) {
+        context->registerInstrument(ev.paramU8(), std::unique_ptr<IInstrument>(new Instrument(*currentInstrument)));
+      }
+      nextEvent = new ChannelEvent('inst', uint64_t(ev.param8()));
       break;
     case TrkEvent::SweepSongVolume:
     case TrkEvent::DisableEnvelope:

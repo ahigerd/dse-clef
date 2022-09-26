@@ -8,11 +8,13 @@
 class TrkEvent;
 class DSEContext;
 class Track;
+class BaseOscillator;
 
 struct Instrument : public DefaultInstrument
 {
   Instrument(DSEContext* synth);
   Instrument(const ProgramInfo& preset, DSEContext* synth);
+  Instrument(const Instrument& other) = default;
 
   DSEContext* context;
   int programId;
@@ -22,6 +24,10 @@ struct Instrument : public DefaultInstrument
   std::vector<SplitInfo> splits;
 
   BaseNoteEvent* makeEvent(Track* track, const TrkEvent& ev) const;
+  virtual Channel::Note* noteEvent(Channel* channel, std::shared_ptr<BaseNoteEvent> event);
+
+private:
+  BaseOscillator* makeLFO(const LFO& lfo) const;
 };
 
 #endif

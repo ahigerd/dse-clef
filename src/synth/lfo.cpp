@@ -1,25 +1,27 @@
 #include "lfo.h"
 #include "../chunks/prgichunk.h"
+#include <iostream>
 #include <cmath>
 
-LFO::LFO(const LFOInfo& other) : LFOInfo(other), halfWave(500.0 / other.rate), scale(-1.0/510.0)
+LFO::LFO(const LFOInfo& other) : LFOInfo(other), scale(-1.0/510.0)
 {
   if (rate < 0) {
     // TODO: This is 100% guesswork right now
     rate = -rate;
     scale = -scale;
   }
-  if (route == Pitch) {
-    // Defaults appear to work
-  } else if (route == Volume) {
+  if (route == Volume) {
     // It's unclear why this scaling factor is there, and it'll require a
     // disassembly to verify that it's correct.
-    halfWave = (128.0 * 500.0) / rate;
+    frequencyHz = 256.0 / rate;
   } else if (route == Pan) {
     // Pan scale has to be cut in half because of later processing.
     // Unclear on the rate scaling too
-    scale *= .5;
-    halfWave = (128.0 * 500.0) / rate;
+    //scale *= .5;
+    frequencyHz = 256.0 / rate;
+  } else {
+    // Defaults appear to work
+    frequencyHz = 1.0 / rate;
   }
 }
 
@@ -28,6 +30,7 @@ bool LFO::isEnabled(const LFOInfo& lfo)
   return lfo.route != Disabled && lfo.waveform != NoWave;
 }
 
+/*
 double LFO::sample(double time) const
 {
   // TODO: PP wiki says "may or may not be Hertz"
@@ -85,6 +88,7 @@ double LFO::applyAll(const std::vector<LFO>& lfos, Route r, double base, double 
   }
   return base;
 }
+*/
 
 bool LFO::isEnabled(const std::vector<LFO>& lfos, Route r)
 {

@@ -2,6 +2,9 @@
 #include "track.h"
 #include "sample.h"
 #include "codec/sampledata.h"
+#include "synth/sampler.h"
+#include "synth/oscillator.h"
+#include "s2wcontext.h"
 #include "dsecontext.h"
 #include "utility.h"
 #include "../chunks/wavichunk.h"
@@ -111,7 +114,7 @@ BaseNoteEvent* Instrument::makeEvent(Track* track, const TrkEvent& ev) const
       releaseTime = table[split.releaseTime] * mult * .001;
       bendRange = split.bendRange;
     }
-    sample = (false && context) ? context->findSample(split) : nullptr;
+    sample = (context) ? context->findSample(split) : nullptr;
     if (sample) {
       // If using samples honor volume as-is
       noteGain = gain * (split.volume / 127.0);
@@ -133,10 +136,15 @@ BaseNoteEvent* Instrument::makeEvent(Track* track, const TrkEvent& ev) const
 
   BaseNoteEvent* event = nullptr;
   if (sample) {
+    /*
     SampleEvent* samp = new SampleEvent;
     samp->sampleID = sample->sample->sampleID;
     samp->pitchBend = std::pow(2.0, pitch / 12.0);
-    event = samp;
+    */
+    InstrumentNoteEvent* note = new InstrumentNoteEvent;
+    note->pitch = pitch;
+    note->intParams.push_back(sample->sample->sampleID);
+    event = note;
   } else {
     OscillatorEvent* osc = new OscillatorEvent;
     if (programId >= 0x7c) {
@@ -176,4 +184,69 @@ BaseNoteEvent* Instrument::makeEvent(Track* track, const TrkEvent& ev) const
   }
 
   return event;
+}
+
+Channel::Note* Instrument::noteEvent(Channel* channel, std::shared_ptr<BaseNoteEvent> event)
+{
+  auto noteEvent = InstrumentNoteEvent::castShared(event);
+  if (!noteEvent) {
+    return DefaultInstrument::noteEvent(channel, event);
+  }
+
+  uint64_t sampleID = noteEvent->intParams[0];
+  double pitchBend = std::pow(2.0, noteEvent->pitch / 12.0);
+  double duration = event->duration;
+
+  SampleData* sampleData = channel->ctx->s2wContext()->getSample(sampleID);
+  Sampler* samp = new Sampler(channel->ctx, sampleData, pitchBend);
+  samp->param(AudioNode::Gain)->setConstant(noteEvent->volume);
+  samp->param(AudioNode::Pan)->setConstant(noteEvent->pan);
+  if (!duration) {
+    duration = sampleData->duration();
+  }
+
+  Channel::Note* note = new Channel::Note(event, samp, duration);
+
+  DelayNode* filter = nullptr;
+  for (int i = 0; i < lfos.size(); i++) {
+    const LFO& lfo = lfos[i];
+    std::shared_ptr<BaseOscillator> osc(makeLFO(lfo));
+    if (!filter && (lfo.route == LFO::Volume || lfo.route == LFO::Pan)) {
+      filter = new DelayNode(note->source);
+      note->source.reset(filter);
+    }
+    if (lfo.route == LFO::Pitch) {
+      samp->param(Sampler::PitchBend)->connect(osc);
+    } else if (lfo.route == LFO::Volume) {
+      filter->addParam(AudioNode::Gain, 1.0);
+      filter->param(AudioNode::Gain)->connect(osc, 1/256.0, 1.0);
+    } else if (lfo.route == LFO::Pan) {
+      filter->addParam(AudioNode::Pan, 0.5);
+      filter->param(AudioNode::Pan)->connect(osc, 1/8192.0, 0.5);
+    }
+  }
+
+  if (event->useEnvelope) {
+    applyEnvelope(channel, note);
+  }
+  return note;
+}
+
+BaseOscillator* Instrument::makeLFO(const LFO& lfo) const
+{
+  BaseOscillator* node;
+  if (lfo.waveform == LFO::Square) {
+    node = new SquareOscillator(context);
+  } else if (lfo.waveform == LFO::Triangle) {
+    node = new TriangleOscillator(context);
+  } else if (lfo.waveform == LFO::Sine) {
+    node = new SineOscillator(context);
+  } else if (lfo.waveform == LFO::Saw) {
+    node = new SawtoothOscillator(context);
+  } else {
+    node = new NoiseOscillator(context);
+  }
+  node->param(BaseOscillator::Frequency)->setConstant(lfo.frequencyHz);
+  node->param(BaseOscillator::Gain)->setConstant(lfo.scale);
+  return node;
 }
