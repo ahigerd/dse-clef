@@ -1,5 +1,6 @@
 #include "lfo.h"
 #include "../chunks/prgichunk.h"
+#include "../chunks/trackchunk.h"
 #include <iostream>
 #include <cmath>
 
@@ -20,8 +21,13 @@ LFO::LFO(const LFOInfo& other) : LFOInfo(other), scale(-1.0/510.0)
     //scale *= .5;
     frequencyHz = 256.0 / rate;
   } else {
-    // Defaults appear to work
-    frequencyHz = 1.0 / rate;
+    frequencyHz = 128.0 / rate;
+    // TODO: this will be wrong for non-sampler instruments
+    if (scale < 0) {
+      scale = TrkEvent::frequency(69, scale * -8.0) / -440.0 + 1.0;
+    } else {
+      scale = TrkEvent::frequency(69, scale * 8.0) / 440.0 - 1.0;
+    }
   }
 }
 

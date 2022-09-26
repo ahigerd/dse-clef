@@ -216,7 +216,7 @@ Channel::Note* Instrument::noteEvent(Channel* channel, std::shared_ptr<BaseNoteE
       note->source.reset(filter);
     }
     if (lfo.route == LFO::Pitch) {
-      samp->param(Sampler::PitchBend)->connect(osc);
+      samp->param(Sampler::PitchBend)->connect(osc, 1/8192.0, 1.0);
     } else if (lfo.route == LFO::Volume) {
       filter->addParam(AudioNode::Gain, 1.0);
       filter->param(AudioNode::Gain)->connect(osc, 1/256.0, 1.0);
