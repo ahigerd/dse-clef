@@ -160,7 +160,10 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
       break;
     case TrkEvent::SetPreset:
       currentInstrument = context->findInstrument(ev.paramU8());
-      if (!context->getInstrument(ev.paramU8())) {
+      if (!currentInstrument) {
+        std::cerr << "trying to use unknown instrument " << int(ev.paramU8()) << std::endl;
+      }
+      if (currentInstrument && !context->getInstrument(ev.paramU8())) {
         context->registerInstrument(ev.paramU8(), std::unique_ptr<IInstrument>(new Instrument(*currentInstrument)));
       }
       nextEvent = new ChannelEvent('inst', uint64_t(ev.param8()));
