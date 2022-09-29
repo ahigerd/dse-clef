@@ -136,11 +136,6 @@ BaseNoteEvent* Instrument::makeEvent(Track* track, const TrkEvent& ev) const
 
   BaseNoteEvent* event = nullptr;
   if (sample) {
-    /*
-    SampleEvent* samp = new SampleEvent;
-    samp->sampleID = sample->sample->sampleID;
-    samp->pitchBend = std::pow(2.0, pitch / 12.0);
-    */
     InstrumentNoteEvent* note = new InstrumentNoteEvent;
     note->pitch = pitch;
     note->intParams.push_back(sample->sample->sampleID);
@@ -222,7 +217,7 @@ Channel::Note* Instrument::noteEvent(Channel* channel, std::shared_ptr<BaseNoteE
       filter->param(AudioNode::Gain)->connect(osc, 1/256.0, 1.0);
     } else if (lfo.route == LFO::Pan) {
       filter->addParam(AudioNode::Pan, 0.5);
-      filter->param(AudioNode::Pan)->connect(osc, 1/8192.0, 0.5);
+      filter->param(AudioNode::Pan)->connect(osc, 1/1024.0, 0.5);
     }
   }
 

@@ -25,23 +25,25 @@ Sample::Sample(const SplitInfo* split, const SampleInfo* info, SampleData* pcm, 
   int sr = sampleInfo->sampleRate;
   pcm->sampleRate = sr * std::pow(2.0, tune / 12.0);
   int loopLength;
-  switch (sampleInfo->format) {
-  case SampleInfo::Pcm8:
-    pcm->loopStart = info->loopStart * 4;
-    loopLength = info->loopLength * 4;
-    break;
-  case SampleInfo::Pcm16:
-    pcm->loopStart = info->loopStart * 2;
-    loopLength = info->loopLength * 2;
-    break;
-  case SampleInfo::Adpcm:
-    pcm->loopStart = info->loopStart * 8 - 8;
-    loopLength = info->loopLength * 8;
-    break;
-  default:
-    // unknown format
-    sample = nullptr;
-    return;
+  if (sampleInfo->loop) {
+    switch (sampleInfo->format) {
+    case SampleInfo::Pcm8:
+      pcm->loopStart = info->loopStart * 4;
+      loopLength = info->loopLength * 4;
+      break;
+    case SampleInfo::Pcm16:
+      pcm->loopStart = info->loopStart * 2;
+      loopLength = info->loopLength * 2;
+      break;
+    case SampleInfo::Adpcm:
+      pcm->loopStart = info->loopStart * 8 - 8;
+      loopLength = info->loopLength * 8;
+      break;
+    default:
+      // unknown format
+      sample = nullptr;
+      return;
+    }
   }
   pcm->loopEnd = pcm->loopStart + loopLength;
 }

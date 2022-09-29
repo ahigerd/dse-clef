@@ -14,19 +14,18 @@ LFO::LFO(const LFOInfo& other) : LFOInfo(other), scale(-1.0/510.0)
   if (route == Volume) {
     // It's unclear why this scaling factor is there, and it'll require a
     // disassembly to verify that it's correct.
-    frequencyHz = 256.0 / rate;
+    frequencyHz = 2048.0 / rate;
   } else if (route == Pan) {
     // Pan scale has to be cut in half because of later processing.
     // Unclear on the rate scaling too
-    //scale *= .5;
-    frequencyHz = 256.0 / rate;
+    frequencyHz = 2048.0 / rate;
   } else {
-    frequencyHz = 128.0 / rate;
+    frequencyHz = 256.0 / rate;
     // TODO: this will be wrong for non-sampler instruments
     if (scale < 0) {
-      scale = TrkEvent::frequency(69, scale * -8.0) / -440.0 + 1.0;
+      scale = TrkEvent::frequency(69, scale * -32.0) / -440.0 + 1.0;
     } else {
-      scale = TrkEvent::frequency(69, scale * 8.0) / 440.0 - 1.0;
+      scale = TrkEvent::frequency(69, scale * 32.0) / 440.0 - 1.0;
     }
   }
 }

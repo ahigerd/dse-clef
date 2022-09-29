@@ -41,7 +41,7 @@ SampleData* PcmdChunk::getSample(uint64_t sampleID, uint8_t format, uint32_t off
     PcmCodec codec(parent()->context(), 16, 1, false);
     return codec.decode(ConstVectorSlice<uint8_t>(data, offset, length), sampleID);
   } else if (format == SampleInfo::Adpcm) {
-    AdpcmCodec codec(parent()->context(), AdpcmCodec::DSP);
+    AdpcmCodec codec(parent()->context(), AdpcmCodec::NDS);
     return codec.decode(ConstVectorSlice<uint8_t>(data, offset, length), sampleID);
   } else {
     throw std::runtime_error("unknown sample format " + std::to_string(format));
