@@ -12,6 +12,14 @@ OBJS_D = $(patsubst %.cpp, ../$(BUILDPATH)/%_d.o, $(SOURCES))
 ../$(PLUGIN_NAME)_d$(EXE): ../seq2wav/$(BUILDPATH)/libseq2wav_d.a $(OBJS_D)
 	$(CXX) -o $@ $(OBJS_D) $(LDFLAGS_D)
 
+../$(BUILDPATH)/lib$(PLUGIN_NAME).a: ../seq2wav/$(BUILDPATH)/libseq2wav.a $(OBJS_R)
+	rm -f $@
+	gcc-ar -rc $@ $(OBJS_R)
+
+../$(BUILDPATH)/lib$(PLUGIN_NAME)_d.a: ../seq2wav/$(BUILDPATH)/libseq2wav_d.a $(OBJS_D)
+	rm -f $@
+	gcc-ar -rc $@ $(OBJS_D)
+
 ../$(BUILDPATH)/%.o: %.cpp Makefile ../config.mak
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS_R) -c -o $@ $<
