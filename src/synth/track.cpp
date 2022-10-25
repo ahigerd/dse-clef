@@ -180,10 +180,9 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
     case TrkEvent::SetChannelPan:
       unhandled = true; break;
     case TrkEvent::SetChannelVolume:
-      context->channelGain[trk->channelID()] = ev.param16() / 127.0;
+      context->channelGain[trk->channelID()] = ev.param8() / 127.0;
       break;
     case TrkEvent::SetFineTune:
-      unhandled = true; break;
     case TrkEvent::AddToFineTune:
     case TrkEvent::SetCoarseTune:
     case TrkEvent::AddToTune:

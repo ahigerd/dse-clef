@@ -109,9 +109,11 @@ TrackChunk::TrackChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int 
       case TrkEvent::SetLFO2ToVolumeEnabled:
       case TrkEvent::SetLFO3ToPanEnabled:
       case UnknownEvent::EventBF:
-      case UnknownEvent::EventC0:
       case UnknownEvent::EventF6:
         paramLen = 1;
+        break;
+      case UnknownEvent::EventC0:
+        paramLen = 0;
         break;
       default:
         if (ev.eventType < 0x80) {
@@ -129,10 +131,10 @@ TrackChunk::TrackChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int 
     }
     events.push_back(ev);
     if (ev.eventType == 0x98) {
-      return;
+      //return;
     }
   }
-  throw std::runtime_error("no EndOfTrack event found");
+  //throw std::runtime_error("no EndOfTrack event found");
 }
 
 uint8_t TrackChunk::trackID() const
@@ -273,7 +275,9 @@ std::string TrkEvent::debug(int octave, int lastLength, int lastRest) const
     ss << "R";
   } else {
     switch (eventType) {
-      case 0xCB: case 0xF8: case 0xAB:
+      case UnusedEvent::NoOp16:
+      case UnusedEvent::NoOp16_2:
+      case UnusedEvent::NoOp8:
         ss << "nop";
         break;
       case RepeatRest:
@@ -318,14 +322,84 @@ std::string TrkEvent::debug(int octave, int lastLength, int lastRest) const
       case SetPitchBendRange:
         ss << "BendRange(" << (int)paramU8() << ")";
         break;
+      case SetChannelVolume:
+        ss << "Ch";
       case SetVolume:
         ss << "Volume(" << (int)param8() << ")";
+        break;
+      case SweepVolume:
+        ss << "Volume(" << (int)param16() << "~>" << (int)(param24() >> 16) << ")";
         break;
       case SetExpression:
         ss << "Expression(" << (int)param8() << ")";
         break;
+      case SetChannelPan:
+        ss << "Ch";
       case SetPan:
         ss << "Pan(" << (param8() > 0x40 ? "+" : "") << (param8() - 0x40) << ")";
+        break;
+      case SweepPan:
+        ss << "Pan(" << (int)param16() << "~>" << (int)(param24() >> 16) << ")";
+        break;
+      case SetSwdl:
+        ss << "Swdl(" << (int)param8() << ")";
+        break;
+      case SetBank:
+        ss << "Bank(" << (int)param8() << ")";
+        break;
+      case SetSwdlAndBank:
+        ss << "SwdlBank(" << (int)param8() << "," << (int)(param16() >> 8) << ")";
+        break;
+      case SetEnvelopeAttack:
+        ss << "EnvAttack(" << (int)param8() << ")";
+        break;
+      case SetEnvelopeAttackTime:
+        ss << "EnvAttackTime(" << (int)param8() << ")";
+        break;
+      case SetEnvelopeHold:
+        ss << "EnvHold(" << (int)param8() << ")";
+        break;
+      case SetEnvelopeDecaySustain:
+        ss << "EnvDecaySustain(" << (int)param8() << "," << (int)(param16() >> 8) << ")";
+        break;
+      case SetEnvelopeFade:
+        ss << "EnvFade(" << (int)param8() << ")";
+        break;
+      case SetEnvelopeRelease:
+        ss << "EnvRelease(" << (int)param8() << ")";
+        break;
+      case SetFineTune:
+        ss << "FineTune(" << (int)param8() << ")";
+        break;
+      case AddToFineTune:
+        ss << "FineTune(+" << (int)param8() << ")";
+        break;
+      case SetCoarseTune:
+        ss << "CoarseTune(" << (int)param8() << ")";
+        break;
+      case AddToTune:
+        ss << "Tune(" << (int)param16() << ")";
+        break;
+      case SweepTune:
+        ss << "Tune(" << (int)param16() << "~>" << (int)(param24() >> 16) << ")";
+        break;
+      case DalSegno:
+        ss << "DalSegno";
+        break;
+      case Segno:
+        ss << "Segno(x" << (int)param8() << ")";
+        break;
+      case ReplaceLFO1AsPitch:
+        ss << "LFO[1](true,Pitch," << (int)params[4] << "," << (int)param16() << "," << (int)(params[3] | (params[4] << 8)) << ")";
+        break;
+      case ReplaceLFO2AsVolume:
+        ss << "LFO[2](true,Volume," << (int)params[4] << "," << (int)param16() << "," << (int)(params[3] | (params[4] << 8)) << ")";
+        break;
+      case ReplaceLFO3AsPan:
+        ss << "LFO[3](true,Pan," << (int)params[4] << "," << (int)param16() << "," << (int)(params[3] | (params[4] << 8)) << ")";
+        break;
+      case ReplaceLFO:
+        ss << "LFO[T](_,_," << (int)params[4] << "," << (int)param16() << "," << (int)(params[3] | (params[4] << 8)) << ")";
         break;
       default:
         ss << "?" << std::hex << int32_t(eventType) << std::dec;

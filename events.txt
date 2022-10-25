@@ -76,7 +76,7 @@ be SetChannelPan            1
 bf EventBF                  1
     unknown
     -- sets or clears flag bit 0
-c0 EventC0                  1
+c0 EventC0                  0
     unknown
     -- sets flag bit 1
 c1 StopInvalidTrack         0
@@ -121,7 +121,9 @@ da StopInvalidTrack         0
 db SetPitchBendRange        1
     uint8: maximum bend in semitones
 dc ReplaceLFO1AsPitch       5
-    TODO
+    uint16: LFO rate
+    uint16: LFO depth
+    uint8: waveform (see f2)
 dd SetLFO1DelayFade         4
     TODO
 de StopInvalidTrack         0
@@ -166,6 +168,7 @@ f0 ReplaceLFO               5
     uint16: LFO depth
     uint8: waveform selection (see 0xf2)
     LFO delay and LFO fade time are set to 0
+    applies to target LFO (see 0xf2)
 f1 SetLFODelayFade          4
     uint16: LFO delay
     uint16: LFO fade time
@@ -201,6 +204,7 @@ f3 SetLFORoute              3
         2: volume
         3: pan
         4: filter
+    sets target LFO (see 0xf2)
 f4 StopInvalidTrack         0
 f5 StopInvalidTrack         0
 f6 EventF6                  1
