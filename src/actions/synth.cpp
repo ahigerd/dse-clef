@@ -4,6 +4,7 @@
 #include "riffwriter.h"
 #include "../dsecontext.h"
 #include "../chunks/trackchunk.h"
+#include "../synth/mergetrack.h"
 #include "synth/track.h"
 #include <cmath>
 #include <cstdlib>
@@ -64,6 +65,7 @@ bool synthSequence(S2WContext* ctx, const std::vector<std::string>& paths, const
 
     context.prepareTimings();
     std::vector<Track> tracks;
+    std::vector<MergeTrack> channels;
     std::vector<bool> trackDone;
     int trackCount = context.tracks.size();
     int tracksLeft = trackCount;
@@ -71,11 +73,19 @@ bool synthSequence(S2WContext* ctx, const std::vector<std::string>& paths, const
 
     int64_t progress = 0;
     int percent = 0;
-    std::cerr << "Progress: 0%" << std::flush;
+    //std::cerr << "Progress: 0%" << std::flush;
     tracks.reserve(context.tracks.size());
+    channels.reserve(16);
     for (TrackChunk* track : context.tracks) {
+      int ch = track->channelID();
+      while (ch >= channels.size()) {
+        channels.emplace_back();
+        context.addChannel(&channels[channels.size() - 1]);
+      }
       tracks.emplace_back(track, &context);
-      context.addChannel(&tracks[tracks.size() - 1]);
+      //if (tracks.size() == 7)
+      //if (tracks.size() == 6 || tracks.size() == 7 || tracks.size() == 12)
+      channels[ch].addTrack(&tracks[tracks.size() - 1]);
       trackDone.push_back(false);
     }
 
@@ -135,6 +145,7 @@ bool synthSequence(S2WContext* ctx, const std::vector<std::string>& paths, const
     // TODO: ensure length accuracy
     RiffWriter riff(sampleRate, true, sampleLength * 2);
     riff.open(filename);
+    //context.seek(38.0);
     context.save(&riff);
     riff.close();
     didSomething = true;

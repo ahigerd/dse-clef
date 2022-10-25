@@ -30,8 +30,6 @@ protected:
   virtual std::shared_ptr<SequenceEvent> readNextEvent();
   void internalReset();
   void updateTotalGain();
-  static double combineGain3(double g1, double g2, double g3);
-  double channelGain() const;
 };
 
 #endif

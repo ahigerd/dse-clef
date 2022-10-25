@@ -1,5 +1,5 @@
 #ifndef D2W_DSECONTEXT_H
-#define D2E_DSECONTEXT_H
+#define D2W_DSECONTEXT_H
 
 #include "synth/synthcontext.h"
 #include <map>

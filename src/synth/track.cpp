@@ -177,10 +177,12 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
     case TrkEvent::SetEnvelopeFade:
     case TrkEvent::SetEnvelopeRelease:
     case TrkEvent::SetNoteVolume:
-    case TrkEvent::SetChannelPan:
       unhandled = true; break;
+    case TrkEvent::SetChannelPan:
+      nextEvent = new ChannelEvent(AudioNode::Pan, double(ev.param8() / 127.0));
+      break;
     case TrkEvent::SetChannelVolume:
-      context->channelGain[trk->channelID()] = ev.param8() / 127.0;
+      nextEvent = new ChannelEvent(AudioNode::Gain, double(ev.param8() / 127.0));
       break;
     case TrkEvent::SetFineTune:
     case TrkEvent::AddToFineTune:
@@ -302,10 +304,5 @@ void Track::internalReset()
 
 void Track::updateTotalGain()
 {
-  totalGain = channelGain() * volume * expression;
-}
-
-double Track::channelGain() const
-{
-  return context->channelGain[trk->channelID()];
+  totalGain = volume * expression;
 }
