@@ -2,6 +2,7 @@
 #include "../mojibake.h"
 #include "../dsefile.h"
 #include "../dseutil.h"
+#include <filesystem>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -12,6 +13,10 @@ static const char spinner[] = "|/-\\";
 bool extractDSE(S2WContext* ctx, const std::vector<std::string>& paths, const std::string& outputPath, const CommandArgs& args)
 {
   bool romaji = args.hasKey("romaji");
+  if (!std::filesystem::create_directories(std::filesystem::path(outputPath))) {
+    std::cerr << "Unable to create directories for " << outputPath << std::endl;
+    return false;
+  }
   for (const std::string& path : paths) {
     std::cout << "Scanning " << path << "..." << std::endl;
     std::vector<uint8_t> buffer = readFile(ctx, path);
