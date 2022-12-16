@@ -179,7 +179,7 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
     case TrkEvent::SetNoteVolume:
       unhandled = true; break;
     case TrkEvent::SetChannelPan:
-      nextEvent = new ChannelEvent(AudioNode::Pan, double(ev.param8() / 127.0));
+      nextEvent = new ChannelEvent(AudioNode::Pan, double(ev.paramU8() / 128.0));
       break;
     case TrkEvent::SetChannelVolume:
       nextEvent = new ChannelEvent(AudioNode::Gain, double(ev.param8() / 127.0));
