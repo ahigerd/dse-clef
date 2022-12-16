@@ -64,7 +64,11 @@ void hexdump(const std::vector<uint8_t>& buffer, int limit)
 
 bool mkdirIfNeeded(const std::string& path) {
   if (::access(path.c_str(), W_OK) != 0) {
+#ifdef _WIN32
+    return ::mkdir(path.c_str()) == 0;
+#else
     return ::mkdir(path.c_str(), 0755) == 0;
+#endif
   }
   return true;
 }
