@@ -1,16 +1,40 @@
 #include "dsechunk.h"
 #include "dseutil.h"
+#include "chunks/endchunks.h"
+#include "chunks/kgrpchunk.h"
+#include "chunks/pcmdchunk.h"
+#include "chunks/prgichunk.h"
+#include "chunks/sadlchunk.h"
+#include "chunks/songchunk.h"
+#include "chunks/trackchunk.h"
+#include "chunks/wavichunk.h"
 #include <map>
 
-static std::map<uint32_t, DSEChunk::Registrar*>& chunkRegistry()
-{
-  static std::map<uint32_t, DSEChunk::Registrar*> registry;
-  return registry;
-}
+struct IRegistrar {
+  virtual DSEChunk* create(DSEFile* parent, const std::vector<uint8_t>& buffer, int offset) const = 0;
+};
 
-void DSEChunk::registerType(uint32_t magic, DSEChunk::Registrar* rr)
+template <typename ChunkType>
+struct ChunkRegistrar : public IRegistrar {
+  DSEChunk* create(DSEFile* p, const std::vector<uint8_t>& b, int o) const {
+    return new ChunkType(p, b, o);
+  }
+};
+
+static std::map<uint32_t, IRegistrar*>& chunkRegistry()
 {
-  chunkRegistry()[magic] = rr;
+  static std::map<uint32_t, IRegistrar*> registry{
+    { 'eoc ', new ChunkRegistrar<EOCChunk>() },
+    { 'eod ', new ChunkRegistrar<EODChunk>() },
+    { 'kgrp', new ChunkRegistrar<KgrpChunk>() },
+    { 'pcmd', new ChunkRegistrar<PcmdChunk>() },
+    { 'prgi', new ChunkRegistrar<PrgiChunk>() },
+    { 'sadl', new ChunkRegistrar<SadlChunk>() },
+    { 'song', new ChunkRegistrar<SongChunk>() },
+    { 'trk ', new ChunkRegistrar<TrackChunk>() },
+    { 'wavi', new ChunkRegistrar<WaviChunk>() },
+  };
+  return registry;
 }
 
 DSEChunk::DSEChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int offset)

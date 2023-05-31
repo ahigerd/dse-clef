@@ -1,8 +1,6 @@
 #include "kgrpchunk.h"
 #include "../dseutil.h"
 
-REGISTER_CHUNK(KgrpChunk)
-
 KgrpChunk::KgrpChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int offset)
 : KgrpChunk::super(parent, buffer, offset)
 {

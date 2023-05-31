@@ -29,5 +29,6 @@ std::string hexdumpToString(const std::vector<T>& buffer, const std::string& pre
 
 bool mkdirIfNeeded(const std::string& path);
 std::vector<uint8_t> readFile(S2WContext* ctx, const std::string& filename);
+std::vector<uint8_t> readFile(std::istream& file, const std::string& filename = std::string());
 
 #endif

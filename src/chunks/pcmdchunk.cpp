@@ -8,8 +8,6 @@
 #include "s2wcontext.h"
 #include <exception>
 
-REGISTER_CHUNK(PcmdChunk)
-
 PcmdChunk::PcmdChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int offset)
 : PcmdChunk::super(parent, buffer, offset)
 {

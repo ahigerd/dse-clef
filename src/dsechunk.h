@@ -12,11 +12,6 @@ class DSEFile;
 class DSEChunk
 {
 public:
-  struct Registrar {
-    virtual DSEChunk* create(DSEFile* parent, const std::vector<uint8_t>& buffer, int offset) const = 0;
-  };
-  static void registerType(uint32_t magic, Registrar* rr);
-
   static DSEChunk* parse(DSEFile* parent, const std::vector<uint8_t>& buffer, int offset = 0);
 
   virtual ~DSEChunk() {}
@@ -55,10 +50,9 @@ protected:
     : DSEChunk(parent, buffer, offset) {}
 };
 
-#define REGISTER_CHUNK(ChunkType) namespace ChunkType ## R { static struct Registrar : public DSEChunk::Registrar {\
-  Registrar() { DSEChunk::registerType(ChunkType::Magic, this); } \
-  DSEChunk* create(DSEFile* p, const std::vector<uint8_t>& b, int o) const { return new ChunkType(p, b, o); } \
-} registrar; }
+
+
+#define REGISTER_CHUNK(ChunkType)
 
 class UnknownChunk : public DSEChunk
 {

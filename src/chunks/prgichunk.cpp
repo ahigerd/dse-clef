@@ -2,8 +2,7 @@
 #include "../dseutil.h"
 #include "../dsefile.h"
 #include <sstream>
-
-REGISTER_CHUNK(PrgiChunk)
+#include <iostream>
 
 PrgiChunk::PrgiChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int offset)
 : PrgiChunk::super(parent, buffer, offset)

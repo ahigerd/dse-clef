@@ -6,8 +6,6 @@
 #include <exception>
 #include <iostream>
 
-REGISTER_CHUNK(SadlChunk)
-
 SadlChunk::SadlChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int offset)
 : SadlChunk::super(parent, buffer, offset)
 {

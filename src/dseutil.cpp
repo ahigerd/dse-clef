@@ -1,4 +1,4 @@
-#include "utility.h"
+#include "dseutil.h"
 #include "s2wcontext.h"
 #include <iomanip>
 #include <sstream>
@@ -79,7 +79,11 @@ std::vector<uint8_t> readFile(S2WContext* ctx, const std::string& filename)
   if (!fptr || !*fptr) {
     throw std::runtime_error("unable to read " + filename);
   }
-  auto& file = *fptr;
+  return readFile(*fptr);
+}
+
+std::vector<uint8_t> readFile(std::istream& file, const std::string& filename)
+{
   auto startPos = file.tellg();
   file.seekg(0, std::ios::end);
   auto endPos = file.tellg();
@@ -88,7 +92,7 @@ std::vector<uint8_t> readFile(S2WContext* ctx, const std::string& filename)
   std::vector<uint8_t> buffer(fileSize);
   file.read(reinterpret_cast<char*>(buffer.data()), fileSize);
   if (!file) {
-    throw std::runtime_error("error while reading " + filename);
+    throw std::runtime_error("error while reading " + (filename.size() ? filename : "file"));
   }
   return buffer;
 }

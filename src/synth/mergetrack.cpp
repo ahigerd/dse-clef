@@ -7,7 +7,7 @@ MergeTrack::MergeTrack()
   // initializers only
 }
 
-void MergeTrack::addTrack(ITrack* track)
+void MergeTrack::addTrack(const std::shared_ptr<ITrack>& track)
 {
   subTracks.push_back(track);
   nextEvents.emplace_back(nullptr);
@@ -15,7 +15,7 @@ void MergeTrack::addTrack(ITrack* track)
 
 bool MergeTrack::isFinished() const
 {
-  for (ITrack* t : subTracks) {
+  for (const std::shared_ptr<ITrack>& t : subTracks) {
     if (!t->isFinished()) {
       return false;
     }
@@ -26,7 +26,7 @@ bool MergeTrack::isFinished() const
 double MergeTrack::length() const
 {
   double l = 0;
-  for (ITrack* t : subTracks) {
+  for (const std::shared_ptr<ITrack>& t : subTracks) {
     double tl = t->length();
     if (tl > l) {
       l = tl;
@@ -64,7 +64,7 @@ std::shared_ptr<SequenceEvent> MergeTrack::readNextEvent()
 
 void MergeTrack::internalReset()
 {
-  for (ITrack* t : subTracks) {
+  for (const std::shared_ptr<ITrack>& t : subTracks) {
     t->reset();
   }
 }

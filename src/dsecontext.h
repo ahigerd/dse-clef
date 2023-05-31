@@ -18,7 +18,7 @@ class SplitInfo;
 class DSEContext : public SynthContext
 {
 public:
-  DSEContext(S2WContext* ctx, double sampleRate, std::unique_ptr<DSEFile> _smdl, std::unique_ptr<DSEFile> _swdl, DSEFile* bank);
+  DSEContext(S2WContext* ctx, double sampleRate, std::unique_ptr<DSEFile> _smdl, std::unique_ptr<DSEFile> _swdl, std::shared_ptr<DSEFile> _bank);
   ~DSEContext();
 
   int loopSample;
@@ -45,6 +45,7 @@ public:
 private:
   std::map<int, std::unique_ptr<Instrument>> instruments;
   std::map<int, std::unique_ptr<Sample>> samples;
+  std::shared_ptr<DSEFile> bank;
 };
 
 #endif

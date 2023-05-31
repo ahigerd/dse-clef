@@ -9,7 +9,7 @@ static std::map<std::string, ActionFn> actionFns{
   { "chunks", listChunks },
   { "dump-samples", dumpSamples },
   { "dump-streams", dumpStreams },
-  { "synth", synthSequence },
+  { "synth", synthSequenceToFile },
 };
 
 int main(int argc, char** argv)

@@ -13,7 +13,7 @@ class MergeTrack : public ITrack
 public:
   MergeTrack();
 
-  void addTrack(ITrack* track);
+  void addTrack(const std::shared_ptr<ITrack>& track);
 
   virtual bool isFinished() const;
   virtual double length() const;
@@ -23,7 +23,7 @@ protected:
   virtual void internalReset();
 
 private:
-  std::vector<ITrack*> subTracks;
+  std::vector<std::shared_ptr<ITrack>> subTracks;
   std::vector<std::shared_ptr<SequenceEvent>> nextEvents;
 };
 

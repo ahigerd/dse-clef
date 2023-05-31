@@ -1,8 +1,6 @@
 #include "songchunk.h"
 #include "../dseutil.h"
 
-REGISTER_CHUNK(SongChunk)
-
 SongChunk::SongChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int offset)
 : SongChunk::super(parent, buffer, offset)
 {

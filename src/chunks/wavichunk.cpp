@@ -4,8 +4,6 @@
 #include <sstream>
 #include <iomanip>
 
-REGISTER_CHUNK(WaviChunk)
-
 WaviChunk::WaviChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int offset)
 : WaviChunk::super(parent, buffer, offset)
 {

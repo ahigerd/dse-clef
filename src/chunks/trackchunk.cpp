@@ -4,8 +4,6 @@
 #include <cmath>
 #include <exception>
 
-REGISTER_CHUNK(TrackChunk)
-
 namespace UnusedEvent {
   enum {
     NoOp16 = 0xCB,
