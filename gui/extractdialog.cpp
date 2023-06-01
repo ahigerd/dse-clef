@@ -326,7 +326,12 @@ void ExtractDialog::scanFinished()
     check->setData(Qt::CheckStateRole, Qt::Checked);
     tblFiles->setItem(rowIndex, 0, check);
     tblFiles->setItem(rowIndex, 1, new QTableWidgetItem());
-    tblFiles->setItem(rowIndex, 2, new QTableWidgetItem(QString::fromStdString(row->originalName)));
+    std::string extension = magicString(scannedFiles[rowIndex]->dseFile.magic()).substr(0, 3);
+    if (extension == "smd" || extension == "sad") {
+      tblFiles->setItem(rowIndex, 2, new QTableWidgetItem(QString::fromStdString(row->originalName)));
+    } else {
+      tblFiles->setItem(rowIndex, 2, new QTableWidgetItem());
+    }
     tblFiles->setItem(rowIndex, 3, new QTableWidgetItem());
     rowIndex++;
   }
