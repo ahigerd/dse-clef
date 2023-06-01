@@ -1,5 +1,5 @@
 #include <QApplication>
-#include "mainwindow.h"
+#include "dsewindow.h"
 #include "s2wcontext.h"
 #include "synth/synthcontext.h"
 #include "plugin/baseplugin.h"
@@ -13,10 +13,10 @@ int main(int argc, char** argv)
   QCoreApplication::setApplicationName(QString::fromStdString(plugin->pluginName()));
   QCoreApplication::setApplicationVersion(QString::fromStdString(plugin->version()));
   QCoreApplication::setOrganizationName("seq2wav");
-  QCoreApplication::setOrganizationDomain("seq2wav" + QString::fromStdString(plugin->pluginShortName()));
+  QCoreApplication::setOrganizationDomain("seq2wav." + QString::fromStdString(plugin->pluginShortName()));
   QApplication app(argc, argv);
 
-  MainWindow mw(plugin);
+  DSEWindow mw(plugin);
   mw.show();
   if (app.arguments().length() > 1) {
     mw.openFile(app.arguments()[1], true);

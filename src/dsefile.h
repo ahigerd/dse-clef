@@ -42,7 +42,8 @@ public:
   int sampleCount() const;
   int presetCount() const;
 
-  const ConstVectorSlice<uint8_t>& getHeader() const { return header; }
+  inline const ConstVectorSlice<uint8_t>& getHeader() const { return header; }
+  inline const std::vector<uint8_t>& getData() const { return data; }
 
 private:
   void load(const std::vector<uint8_t>& buffer, int offset);

@@ -62,7 +62,6 @@ bool extractDSE(S2WContext* ctx, const std::vector<std::string>& paths, const st
         if (romaji) {
           filename = transliterateRomaji(filename);
         }
-        int dupe = 0;
         std::string baseFilename = filename;
         std::string extension = "." + magicString(dseFile.magic()).substr(0, 3);
         filename += extension;
