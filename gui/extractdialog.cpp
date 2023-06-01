@@ -297,6 +297,7 @@ void ExtractDialog::scan(const QString& path)
           filename = baseFilename + "_" + counter + extension;
           ++counter;
         }
+        usedNames.insert(filename);
         if (baseRomaji != baseFilename) {
           std::string romajiFilename = baseRomaji + extension;
           char counter = '1';
