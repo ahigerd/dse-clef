@@ -19,6 +19,21 @@
 
 #define ARM7_CLOCK 33513982
 
+static std::string makeRelative(const std::string& base, const std::string& path)
+{
+  int pathSlashPos = path.find_last_of(PATH_CHARS);
+  if (pathSlashPos != std::string::npos) {
+    // already absolute path
+    return path;
+  }
+  int slashPos = base.find_last_of(PATH_CHARS);
+  if (slashPos == std::string::npos) {
+    // no path in base
+    return path;
+  }
+  return base.substr(0, slashPos + 1) + path;
+}
+
 DSEContext* prepareSynthContext(S2WContext* ctx, std::istream& inputFile, const std::string& inputPath, const std::string& pairPath, const std::string& bankPath, const CommandArgs* args)
 {
   double sampleRate = ARM7_CLOCK / 1024.0;
@@ -26,7 +41,7 @@ DSEContext* prepareSynthContext(S2WContext* ctx, std::istream& inputFile, const 
   // Check to see if the last path is a sound bank
   std::shared_ptr<DSEFile> bankFile;
   if (!bankPath.empty()) {
-    bankFile.reset(new DSEFile(ctx, bankPath));
+    bankFile.reset(new DSEFile(ctx, makeRelative(inputPath, bankPath)));
     if (!bankFile->findChunk('wavi') &&
         !bankFile->findChunk('prgi') &&
         !bankFile->findChunk('kgrp') &&
@@ -40,7 +55,7 @@ DSEContext* prepareSynthContext(S2WContext* ctx, std::istream& inputFile, const 
   std::unique_ptr<DSEFile> pairFile;
   try {
     std::string path = pairPath.empty() ? inputPath.substr(0, inputPath.size() - 4) + ".swd" : pairPath;
-    pairFile.reset(new DSEFile(ctx, path));
+    pairFile.reset(new DSEFile(ctx, makeRelative(inputPath, path)));
   } catch (...) {
     // If the paired file doesn't exist or can't be parsed, it'll throw
   }

@@ -21,6 +21,24 @@
 #include <QFileInfo>
 #include <QThread>
 
+#if QT_CONFIG(cxx11_future)
+#define qThreadCreate QThread::create
+#else
+namespace {
+template <typename FN>
+class QThreadRunner : public QThread
+{
+public:
+  QThreadRunner(FN fn) : QThread(nullptr), fn(fn) {}
+
+  void run() { fn(); }
+
+  FN fn;
+};
+}
+#define qThreadCreate new QThreadRunner
+#endif
+
 ExtractDialog::ScanResult::ScanResult(S2WContext* ctx, const std::vector<uint8_t>& buffer, int offset)
 : dseFile(ctx, buffer, offset)
 {
@@ -245,7 +263,7 @@ void ExtractDialog::scan(const QString& path)
   prgScan->setValue(0);
   stkScan->setCurrentWidget(prgScan);
 
-  QThread* worker = QThread::create([this, path]{
+  QThread* worker = qThreadCreate([this, path]{
     QFile f(path);
     if (!f.open(QIODevice::ReadOnly)) {
       // TODO: error

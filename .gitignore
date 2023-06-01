@@ -18,6 +18,7 @@
 *.lib
 build
 build_win
+*_plugin_import.cpp
 
 # build outputs
 depends.mak
