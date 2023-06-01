@@ -3,9 +3,9 @@
 
 #include <vector>
 #include <cstdint>
-class SplitInfo;
-class SampleInfo;
-class SampleData;
+struct SplitInfo;
+struct SampleInfo;
+struct SampleData;
 class DSEContext;
 
 struct Sample

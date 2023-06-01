@@ -4,8 +4,8 @@
 #include "../dsechunk.h"
 #include "../vectorslice.h"
 #include <map>
-class SampleInfo;
-class SampleData;
+struct SampleInfo;
+struct SampleData;
 
 class PcmdChunk : public DSEChunkBase<PcmdChunk, 'pcmd'>
 {

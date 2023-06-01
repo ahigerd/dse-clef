@@ -7,7 +7,7 @@
 #include <set>
 class TrackChunk;
 class DSEContext;
-class Instrument;
+struct Instrument;
 
 struct Track : public ITrack
 {

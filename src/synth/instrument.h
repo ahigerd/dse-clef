@@ -7,7 +7,7 @@
 #include "lfo.h"
 class TrkEvent;
 class DSEContext;
-class Track;
+struct Track;
 class BaseOscillator;
 
 struct Instrument : public DefaultInstrument

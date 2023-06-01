@@ -2,7 +2,7 @@
 #define SADLCHUNK_H
 
 #include "../dsechunk.h"
-class SampleData;
+struct SampleData;
 
 class SadlChunk : public DSEChunkBase<SadlChunk, 'sadl'>
 {

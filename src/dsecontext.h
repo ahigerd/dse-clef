@@ -11,9 +11,9 @@ class KgrpChunk;
 class PcmdChunk;
 class SongChunk;
 class TrackChunk;
-class Sample;
-class Instrument;
-class SplitInfo;
+struct Sample;
+struct Instrument;
+struct SplitInfo;
 
 class DSEContext : public SynthContext
 {
