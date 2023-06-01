@@ -2,6 +2,7 @@
 #include "s2wcontext.h"
 #include "dseutil.h"
 #include "mojibake.h"
+#include "guiutils.h"
 #include <set>
 #include <QMetaObject>
 #include <QStackedWidget>
@@ -20,24 +21,6 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QThread>
-
-#if QT_CONFIG(cxx11_future)
-#define qThreadCreate QThread::create
-#else
-namespace {
-template <typename FN>
-class QThreadRunner : public QThread
-{
-public:
-  QThreadRunner(FN fn) : QThread(nullptr), fn(fn) {}
-
-  void run() { fn(); }
-
-  FN fn;
-};
-}
-#define qThreadCreate new QThreadRunner
-#endif
 
 ExtractDialog::ScanResult::ScanResult(S2WContext* ctx, const std::vector<uint8_t>& buffer, int offset)
 : dseFile(ctx, buffer, offset)
