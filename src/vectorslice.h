@@ -95,10 +95,17 @@ public:
   using const_iterator = typename Container::const_iterator;
 
   VectorSlice() : BaseType() {}
+#if !defined(_MSC_VER) || _MSC_VER >= 1910
   VectorSlice(const ThisType& other) = default;
   VectorSlice(ThisType&& other) = default;
   VectorSlice& operator=(const ThisType& other) = default;
   VectorSlice& operator=(ThisType&& other) = default;
+#else
+  VectorSlice(const ThisType& other): BaseType(reinterpret_cast<const BaseType&>(other)) {}
+  VectorSlice(ThisType&& other): BaseType(reinterpret_cast<BaseType&&>(other)) {}
+  VectorSlice& operator=(const ThisType& other) { *this = (const BaseType&)other; }
+  VectorSlice& operator=(ThisType&& other) { *this = std::forward((const BaseType&)other); }
+#endif
 
   VectorSlice(const Iter& begin, const Iter end)
   : BaseType(nullptr, begin, end) {}

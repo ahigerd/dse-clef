@@ -7,6 +7,13 @@
 #include <iomanip>
 #include <fstream>
 #include <set>
+#if defined(_MSC_VER) && _MSC_VER < 1910
+namespace std {
+  namespace filesystem {
+    using namespace std::experimental::filesystem;
+  }
+}
+#endif
 
 static const char spinner[] = "|/-\\";
 

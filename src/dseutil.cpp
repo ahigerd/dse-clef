@@ -6,7 +6,15 @@
 #include <exception>
 #include <cstdlib>
 #include <sys/stat.h>
+#ifdef _WIN32
+#include <io.h>
+#include <direct.h>
+#ifndef W_OK
+#define W_OK 2
+#endif
+#else
 #include <unistd.h>
+#endif
 
 std::string magicString(uint32_t magic)
 {
@@ -29,7 +37,7 @@ std::string hexdumpToString(const std::vector<T>& buffer, const std::string& pre
     std::ostringstream ss;
     int len = ss.tellp();
     ss << std::hex << std::setfill('0') << std::setw(wordlen) << uint32_t(ch);
-    len = ss.tellp() - len;
+    len = int(ss.tellp()) - len;
     result += ((cols % 32) ? " " : "\n" + prefix) + ss.str().substr(len - wordlen);
     cols += wordlen;
   }
