@@ -193,7 +193,7 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
       unhandled = true; break;
     case TrkEvent::SetChannelPan:
     case TrkEvent::SetChannelVolume:
-      // Handled separately
+      // handled in DSEContext::prepareTimings()
       break;
     case TrkEvent::SetFineTune:
     case TrkEvent::AddToFineTune:

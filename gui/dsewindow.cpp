@@ -1,5 +1,7 @@
 #include "dsewindow.h"
 #include "extractdialog.h"
+#include "channelwidget.h"
+#include "playercontrols.h"
 #include "plugin/baseplugin.h"
 #include <QMenu>
 #include <QtDebug>
@@ -19,4 +21,11 @@ void DSEWindow::extract()
 {
   ExtractDialog* dlg = new ExtractDialog(m_plugin->context(), this);
   dlg->open();
+}
+
+QWidget* DSEWindow::createPluginWidget(QWidget* parent)
+{
+  ChannelWidget* cw = new ChannelWidget(parent);
+  QObject::connect(controls, SIGNAL(bufferUpdated()), cw, SLOT(updateMeters()));
+  return cw;
 }

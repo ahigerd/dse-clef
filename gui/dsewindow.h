@@ -14,6 +14,7 @@ public slots:
 
 protected:
   virtual void populateFileMenu(QMenu* fileMenu);
+  virtual QWidget* createPluginWidget(QWidget* parent);
 };
 
 #endif
