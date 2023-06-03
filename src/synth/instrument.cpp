@@ -162,20 +162,21 @@ BaseNoteEvent* Instrument::makeEvent(Track* track, const TrkEvent& ev) const
     event = osc;
   }
 
-  noteGain = noteGain * (velocity / 127.0) * track->totalGain;
+  noteGain = noteGain * (velocity / 127.0);
   event->timestamp = track->samplePos * context->sampleTime;
   event->duration = eventDuration * track->samplesPerTick * context->sampleTime;
   event->volume = noteGain * noteGain;
-  event->pan = combinePan(track->pan, notePan);
+  event->pan = notePan;
   if (useEnvelope) {
     event->setEnvelope(
-        attackLevel,
-        attackTime,
-        holdTime,
-        decayTime,
-        sustainLevel,
-        fadeTime,
-        releaseTime);
+      attackLevel,
+      attackTime,
+      holdTime,
+      decayTime,
+      sustainLevel,
+      fadeTime,
+      releaseTime
+    );
   }
 
   return event;
@@ -214,7 +215,7 @@ Channel::Note* Instrument::noteEvent(Channel* channel, std::shared_ptr<BaseNoteE
       samp->param(Sampler::PitchBend)->connect(osc, 1/8192.0, 1.0);
     } else if (lfo.route == LFO::Volume) {
       filter->addParam(AudioNode::Gain, 1.0);
-      filter->param(AudioNode::Gain)->connect(osc, 1/256.0, 1.0);
+      filter->param(AudioNode::Gain)->connect(osc, 1/(256.0 * 64.0), 1.0);
     } else if (lfo.route == LFO::Pan) {
       filter->addParam(AudioNode::Pan, 0.5);
       filter->param(AudioNode::Pan)->connect(osc, 1/1024.0, 0.5);

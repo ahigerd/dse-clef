@@ -16,20 +16,23 @@ struct Track : public ITrack
   const TrackChunk* const trk;
   DSEContext* context;
   const Instrument* currentInstrument;
-  int eventPos, tickPos, samplePos;
+  int eventPos, tickPos, samplePos, channelID, channelEventPos;
   std::set<int>::const_iterator timingIter, timingEnd;
 
   int lastRestLength, lastNoteLength, octave, bendRange;
-  double volume, detune, pitchBend, expression, pan, totalGain;
+  double volume, channelVolume, detune, pitchBend, expression, pan, channelPan, totalGain, totalPan;
   double samplesPerTick;
 
   virtual bool isFinished() const;
   virtual double length() const;
 
+  void enqueueEvent(std::shared_ptr<SequenceEvent> event);
+
 protected:
   virtual std::shared_ptr<SequenceEvent> readNextEvent();
   void internalReset();
-  void updateTotalGain();
+  SequenceEvent* updateTotalGain();
+  SequenceEvent* updateTotalPan();
 };
 
 #endif

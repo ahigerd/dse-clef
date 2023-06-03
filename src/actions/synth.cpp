@@ -63,16 +63,9 @@ DSEContext* prepareSynthContext(S2WContext* ctx, std::istream& inputFile, const 
   std::unique_ptr<DSEContext> context(new DSEContext(ctx, sampleRate, std::move(dseFile), std::move(pairFile), bankFile));
 
   context->prepareTimings();
-  std::vector<MergeTrack*> channels;
 
-  channels.reserve(16);
   for (TrackChunk* track : context->tracks) {
-    int ch = track->channelID();
-    while (ch >= channels.size()) {
-      channels.push_back(new MergeTrack());
-      context->addChannel(channels[channels.size() - 1]);
-    }
-    channels[ch]->addTrack(std::shared_ptr<ITrack>(new Track(track, context.get())));
+    context->addChannel(new Track(track, context.get()));
   }
 
   return context.release();

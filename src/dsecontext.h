@@ -11,6 +11,8 @@ class KgrpChunk;
 class PcmdChunk;
 class SongChunk;
 class TrackChunk;
+class ChannelEvent;
+struct Track;
 struct Sample;
 struct Instrument;
 struct SplitInfo;
@@ -35,6 +37,7 @@ public:
 
   std::map<int, int> tempos; // ({{ 0, 120 }}); // In the absence of tempo markings, default to 120bpm
   std::map<int, std::set<int>> allTimings;
+  std::vector<std::vector<std::shared_ptr<ChannelEvent>>> channelEvents;
   std::vector<double> channelGain;
 
   void prepareTimings();

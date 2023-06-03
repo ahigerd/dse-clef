@@ -63,6 +63,8 @@ void DSEContext::prepareTimings()
   int totalEvents = 0;
   int maxTick = 0;
   int loopTick = -1;
+  channelEvents.clear();
+  channelEvents.resize(16);
   for (const TrackChunk* trk : tracks) {
     int tickPos = 0;
     int lastRest = 0;
@@ -81,6 +83,14 @@ void DSEContext::prepareTimings()
         tempos[tickPos] = ev.paramU8();
       } else if (ev.eventType == TrkEvent::LoopPoint) {
         loopTick = tickPos;
+      } else if (ev.eventType == TrkEvent::SetChannelPan) {
+        ChannelEvent* event = new ChannelEvent(AudioNode::Pan, double(ev.paramU8() / 128.0));
+        event->timestamp = tickPos * sampleTime;
+        channelEvents[trk->channelID()].emplace_back(event);
+      } else if (ev.eventType == TrkEvent::SetChannelVolume) {
+        ChannelEvent* event = new ChannelEvent(AudioNode::Gain, double(ev.param8() / 127.0));
+        event->timestamp = tickPos * sampleTime;
+        channelEvents[trk->channelID()].emplace_back(event);
       }
     }
     if (tickPos > maxTick) {

@@ -10,7 +10,7 @@
 #include <cmath>
 
 Track::Track(const TrackChunk* track, DSEContext* synth)
-: trk(track), context(synth)
+: trk(track), context(synth), channelID(track->channelID())
 {
   internalReset();
 }
@@ -131,6 +131,19 @@ double Track::length() const
 std::shared_ptr<SequenceEvent> Track::readNextEvent()
 {
   SequenceEvent* nextEvent = nullptr;
+  if (channelEventPos < context->channelEvents[channelID].size()) {
+    std::shared_ptr<ChannelEvent> event = context->channelEvents[channelID][channelEventPos];
+    if (event->timestamp <= samplePos * context->sampleTime) {
+      channelEventPos++;
+      if (event->param == AudioNode::Gain) {
+        channelVolume = event->value;
+        nextEvent = updateTotalGain();
+      } else if (event->param == AudioNode::Pan) {
+        channelPan = event->value;
+        nextEvent = updateTotalPan();
+      }
+    }
+  }
   while (!nextEvent && !isFinished()) {
     const TrkEvent& ev = trk->events[eventPos];
     bool unhandled = false;
@@ -179,10 +192,8 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
     case TrkEvent::SetNoteVolume:
       unhandled = true; break;
     case TrkEvent::SetChannelPan:
-      nextEvent = new ChannelEvent(AudioNode::Pan, double(ev.paramU8() / 128.0));
-      break;
     case TrkEvent::SetChannelVolume:
-      nextEvent = new ChannelEvent(AudioNode::Gain, double(ev.param8() / 127.0));
+      // Handled separately
       break;
     case TrkEvent::SetFineTune:
     case TrkEvent::AddToFineTune:
@@ -210,17 +221,17 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
       unhandled = true; break;
     case TrkEvent::SetVolume:
       volume = ev.paramU8() / 127.0;
-      updateTotalGain();
+      nextEvent = updateTotalGain();
       break;
     case TrkEvent::AddVolume:
       volume += ev.paramU8() / 127.0;
-      updateTotalGain();
+      nextEvent = updateTotalGain();
       break;
     case TrkEvent::SweepVolume:
       unhandled = true; break;
     case TrkEvent::SetExpression:
       expression = ev.paramU8() / 127.0;
-      updateTotalGain();
+      nextEvent = updateTotalGain();
       break;
     case TrkEvent::ReplaceLFO2AsVolume:
     case TrkEvent::SetLFO2DelayFade:
@@ -228,9 +239,11 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
       unhandled = true; break;
     case TrkEvent::SetPan:
       pan = ev.paramU8() / 128.0;
+      nextEvent = updateTotalPan();
       break;
     case TrkEvent::AddToPan:
       pan = clamp(pan + ev.paramU8() / 128.0, 0.0, 1.0);
+      nextEvent = updateTotalPan();
       break;
     case TrkEvent::SweepPan:
     case TrkEvent::ReplaceLFO3AsPan:
@@ -292,17 +305,28 @@ void Track::internalReset()
   octave = 4;
   bendRange = 0;
   volume = 1.0;
+  channelVolume = 1.0;
   detune = 0;
   pitchBend = 0;
   expression = 1.0;
+  totalGain = 1.0;
   pan = 0.5;
+  channelPan = 0.5;
+  totalPan = 0.5;
   timingIter = context->allTimings[trk->trackID()].begin();
   timingEnd = context->allTimings[trk->trackID()].end();
   samplesPerTick = context->samplesPerTick(120);
-  updateTotalGain();
+  channelEventPos = 0;
 }
 
-void Track::updateTotalGain()
+SequenceEvent* Track::updateTotalGain()
 {
-  totalGain = volume * expression;
+  totalGain = volume * expression * channelVolume;
+  return new ChannelEvent(AudioNode::Gain, totalGain);
+}
+
+SequenceEvent* Track::updateTotalPan()
+{
+  totalPan = combinePan(pan, channelPan);
+  return new ChannelEvent(AudioNode::Pan, totalPan);
 }
