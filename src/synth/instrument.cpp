@@ -146,6 +146,8 @@ BaseNoteEvent* Instrument::makeEvent(Track* track, const TrkEvent& ev) const
     note->floatParams.push_back(track->pitchBend);
     event = note;
   } else {
+    return nullptr;
+#if 0
     OscillatorEvent* osc = new OscillatorEvent;
     if (programId >= 0x7c) {
       osc->waveformID = 5;
@@ -165,12 +167,13 @@ BaseNoteEvent* Instrument::makeEvent(Track* track, const TrkEvent& ev) const
     }
     osc->frequency = TrkEvent::frequency(pitch, 0);
     event = osc;
+#endif
   }
 
   noteGain = noteGain * (velocity / 127.0);
   event->timestamp = track->samplePos * context->sampleTime;
   event->duration = eventDuration * track->samplesPerTick * context->sampleTime;
-  event->volume = noteGain * noteGain;
+  event->volume = noteGain;
   event->pan = notePan;
   if (useEnvelope) {
     event->setEnvelope(
