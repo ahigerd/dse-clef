@@ -209,6 +209,7 @@ f4 StopInvalidTrack         0
 f5 StopInvalidTrack         0
 f6 EventF6                  1
     unknown
+    enables/disables an unknown feature used by cutscenes
 f7 StopInvalidTrack         0
 f8 NoOp16_2                 2
 f9 StopInvalidTrack         0

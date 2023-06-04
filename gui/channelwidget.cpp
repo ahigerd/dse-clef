@@ -34,7 +34,9 @@ void ChannelWidget::contextUpdated(SynthContext* context)
 void ChannelWidget::updateMeters()
 {
   double timestamp = context->currentTime();
-  if (timestamp < lastUpdate + (1.0 / 120.0)) {
+  if (std::abs(timestamp - lastUpdate) > (1.0 / 30.0)) {
+    lastUpdate = timestamp;
+  } else if (timestamp < lastUpdate + (1.0 / 120.0)) {
     return;
   }
   for (ChannelCheckBox* cb : channels) {
