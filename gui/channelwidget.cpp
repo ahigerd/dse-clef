@@ -3,6 +3,7 @@
 #include "seq/sequenceevent.h"
 #include "synth/synthcontext.h"
 #include "synth/channel.h"
+#include <QAction>
 #include <QCheckBox>
 #include <QGridLayout>
 #include <QHBoxLayout>
@@ -45,6 +46,20 @@ void ChannelWidget::updateMeters()
   lastUpdate = timestamp;
 }
 
+void ChannelWidget::unmuteAll()
+{
+  for (auto channel : channels) {
+    channel->setActive(true);
+  }
+}
+
+void ChannelWidget::setSolo(ChannelCheckBox* solo)
+{
+  for (auto channel : channels) {
+    channel->setActive(channel == solo);
+  }
+}
+
 ChannelCheckBox::ChannelCheckBox(int index, Channel* channel, ChannelWidget* parent)
 : QWidget(parent), channel(channel)
 {
@@ -62,16 +77,34 @@ ChannelCheckBox::ChannelCheckBox(int index, Channel* channel, ChannelWidget* par
   vu->setChannels(1);
   layout->addWidget(vu, 1);
 
-  QObject::connect(chk, SIGNAL(toggled(bool)), this, SLOT(setMute(bool)));
+  QObject::connect(chk, SIGNAL(toggled(bool)), this, SLOT(setActive(bool)));
+
+  QAction* solo = new QAction(tr("Solo"), this);
+  QObject::connect(solo, SIGNAL(triggered()), this, SLOT(setSolo()));
+  addAction(solo);
+
+  QAction* unmute = new QAction(tr("Unmute All"), this);
+  QObject::connect(unmute, SIGNAL(triggered()), parent, SLOT(unmuteAll()));
+  addAction(unmute);
+
+  setContextMenuPolicy(Qt::ActionsContextMenu);
 }
 
-void ChannelCheckBox::setMute(bool checked)
+void ChannelCheckBox::setActive(bool checked)
 {
   channel->mute = !checked;
+  if (chk->isChecked() != checked) {
+    chk->setChecked(checked);
+  }
 }
 
 void ChannelCheckBox::updateMeter(double timestamp)
 {
   double level = channel->mute ? 0 : channel->notes.size() * channel->gain->valueAt(timestamp);
   vu->setLevel(0, level > 4.0 ? 1.0 : level / 4.0);
+}
+
+void ChannelCheckBox::setSolo()
+{
+  static_cast<ChannelWidget*>(parent())->setSolo(this);
 }

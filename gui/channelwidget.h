@@ -20,8 +20,9 @@ public:
 
   void updateMeter(double timestamp);
 
-private slots:
-  void setMute(bool muted);
+public slots:
+  void setActive(bool muted);
+  void setSolo();
 };
 
 class ChannelWidget : public QGroupBox
@@ -30,9 +31,12 @@ class ChannelWidget : public QGroupBox
 public:
   ChannelWidget(QWidget* parent);
 
+  void setSolo(ChannelCheckBox* channel);
+
 public slots:
   void contextUpdated(SynthContext* context);
   void updateMeters();
+  void unmuteAll();
 
 private:
   SynthContext* context;

@@ -303,12 +303,12 @@ void Track::internalReset()
   lastNoteLength = 0;
   octave = 4;
   bendRange = 0;
-  volume = 1.0;
+  volume = 100.0 / 127.0;
   channelVolume = 1.0;
   detune = 0;
   pitchBend = 0;
   expression = 1.0;
-  totalGain = 1.0;
+  totalGain = 100.0 / 127.0;
   pan = 0.5;
   channelPan = 0.5;
   totalPan = 0.5;
