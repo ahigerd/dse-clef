@@ -9,7 +9,10 @@
 #include "utility.h"
 #include "../chunks/wavichunk.h"
 #include "../chunks/trackchunk.h"
+#define _USE_MATH_DEFINES
 #include <cmath>
+
+static const double expPitch = M_LN2 / 12.0;
 
 static const double envDuration[2][128] = {
   {
@@ -129,7 +132,6 @@ BaseNoteEvent* Instrument::makeEvent(Track* track, const TrkEvent& ev) const
     break;
   }
 
-  pitch += track->pitchBend * bendRange;
   if (track->detune) {
     pitch += (std::rand() / (0.5 * RAND_MAX) - 1.0) * track->detune;
   }
@@ -139,6 +141,9 @@ BaseNoteEvent* Instrument::makeEvent(Track* track, const TrkEvent& ev) const
     InstrumentNoteEvent* note = new InstrumentNoteEvent;
     note->pitch = pitch;
     note->intParams.push_back(sample->sample->sampleID);
+    note->intParams.push_back(track->bendRange);
+    note->intParams.push_back(bendRange);
+    note->floatParams.push_back(track->pitchBend);
     event = note;
   } else {
     OscillatorEvent* osc = new OscillatorEvent;
@@ -190,13 +195,19 @@ Channel::Note* Instrument::noteEvent(Channel* channel, std::shared_ptr<BaseNoteE
   }
 
   uint64_t sampleID = noteEvent->intParams[0];
-  double pitchBend = std::pow(2.0, noteEvent->pitch / 12.0);
+  int bendRange = noteEvent->intParams[1];
+  if (!bendRange) {
+    bendRange = noteEvent->intParams[2];
+  }
+  double pitchBend = noteEvent->floatParams[0];
+  double pitch = fastExp(noteEvent->pitch * expPitch);
   double duration = event->duration;
 
   SampleData* sampleData = channel->ctx->s2wContext()->getSample(sampleID);
-  Sampler* samp = new Sampler(channel->ctx, sampleData, pitchBend);
+  Sampler* samp = new Sampler(channel->ctx, sampleData, pitch);
   samp->param(AudioNode::Gain)->setConstant(noteEvent->volume);
   samp->param(AudioNode::Pan)->setConstant(noteEvent->pan);
+  samp->param(Sampler::PitchBend)->setConstant(fastExp(pitchBend * bendRange * expPitch));
   if (!duration) {
     duration = sampleData->duration();
   }
@@ -245,4 +256,27 @@ BaseOscillator* Instrument::makeLFO(const LFO& lfo) const
   node->param(BaseOscillator::Frequency)->setConstant(lfo.frequencyHz);
   node->param(BaseOscillator::Gain)->setConstant(lfo.scale);
   return node;
+}
+
+void Instrument::modulatorEvent(Channel* channel, std::shared_ptr<ModulatorEvent> event)
+{
+  if ((event->param != Sampler::PitchBend && event->param != 'pbrg')) {
+    DefaultInstrument::modulatorEvent(channel, event);
+    return;
+  }
+  for (auto& pair : channel->notes) {
+    auto note = InstrumentNoteEvent::castShared(pair.second->event);
+    auto param = pair.second->source->param(Sampler::PitchBend);
+    if (!note || !param) {
+      continue;
+    }
+    if (event->param == 'pbrg') {
+      note->intParams[1] = event->value;
+    } else {
+      note->floatParams[0] = event->value;
+    }
+    double bendRange = (note->intParams[1] == 0 ? note->intParams[2] : note->intParams[1]);
+    double pitchBend = fastExp(note->floatParams[0] * bendRange * expPitch);
+    param->setConstant(pitchBend);
+  }
 }

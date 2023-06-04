@@ -25,6 +25,7 @@ struct Instrument : public DefaultInstrument
 
   BaseNoteEvent* makeEvent(Track* track, const TrkEvent& ev) const;
   virtual Channel::Note* noteEvent(Channel* channel, std::shared_ptr<BaseNoteEvent> event);
+  virtual void modulatorEvent(Channel* channel, std::shared_ptr<ModulatorEvent> event);
 
 private:
   BaseOscillator* makeLFO(const LFO& lfo) const;

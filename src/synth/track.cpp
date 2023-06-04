@@ -6,6 +6,7 @@
 #include "../chunks/trackchunk.h"
 #include "../chunks/wavichunk.h"
 #include "codec/sampledata.h"
+#include "synth/sampler.h"
 #include <iostream>
 #include <cmath>
 
@@ -206,14 +207,12 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
       detune = ev.param16() / 255.0;
       break;
     case TrkEvent::SetPitchBend:
-      // Interpretation? Assuming it matches default MIDI range
-      // Notes say 500 = 1 semitone and negative means up
-      pitchBend = ev.param16BE() / -4000.0;
-      // Disassembly says:
-      //   FUN_02073c90(ChanStructPtr, (int)(((uint)EventDataPtr[1] + (uint)*EventDataPtr * 0x100) * 0x10000) >> 0x10);
+      pitchBend = ev.param16BE() / 262144.0; //  8192.0;
+      nextEvent = new ModulatorEvent(0, Sampler::PitchBend, pitchBend);
       break;
     case TrkEvent::SetPitchBendRange:
       bendRange = ev.paramU8();
+      nextEvent = new ModulatorEvent(0, 'pbrg', bendRange);
       break;
     case TrkEvent::ReplaceLFO1AsPitch:
     case TrkEvent::SetLFO1DelayFade:
