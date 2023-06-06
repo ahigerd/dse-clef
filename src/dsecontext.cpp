@@ -51,6 +51,8 @@ DSEContext::DSEContext(S2WContext* ctx, double sampleRate, std::unique_ptr<DSEFi
   for (int i = 0; i < 16; i++) {
     channelGain.push_back(1.0);
   }
+
+  defaultInst.reset(new Instrument(this));
 }
 
 DSEContext::~DSEContext()

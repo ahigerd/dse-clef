@@ -207,7 +207,7 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
       detune = ev.param16() / 255.0;
       break;
     case TrkEvent::SetPitchBend:
-      pitchBend = ev.param16BE() / 262144.0; //  8192.0;
+      pitchBend = ev.param16BE() / 8192.0;
       nextEvent = new ModulatorEvent(0, Sampler::PitchBend, pitchBend);
       break;
     case TrkEvent::SetPitchBendRange:
@@ -289,6 +289,9 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
       std::cerr << "Unhandled event " << ev.debug(octave, lastNoteLength, lastRestLength) << std::endl;
     }
     eventPos++;
+  }
+  if (nextEvent && !nextEvent->timestamp) {
+    nextEvent->timestamp = samplePos * context->sampleTime;
   }
   return std::shared_ptr<SequenceEvent>(nextEvent);
 }

@@ -73,7 +73,7 @@ BaseNoteEvent* Instrument::makeEvent(Track* track, const TrkEvent& ev) const
 {
   int eventDuration = ev.duration(track->lastNoteLength);
   track->lastNoteLength = eventDuration;
-  if (!eventDuration) {
+  if (!eventDuration || programId < 0) {
     return nullptr;
   }
 
