@@ -18,4 +18,7 @@ OBJS_D = $(filter-out ../$(BUILDPATH)/gui/% ../$(BUILDPATH)/gui_d/% ../$(BUILDPA
 ../in_$(PLUGIN_NAME)_d.$(DLL): $(OBJS_D) ../seq2wav/$(BUILDPATH)/libseq2wav_d.$(DLL) $(wildcard ../seq2wav/includes/plugins/*.h) s2wplugin.cpp Makefile
 	$(CXX) -shared -o $@ $(CXXFLAGS_D) -DBUILD_WINAMP s2wplugin.cpp $(OBJS_D) $(LDFLAGS_D)
 
+../$(PLUGIN_NAME).clap: $(OBJS_R) ../seq2wav/$(BUILDPATH)/libseq2wav.a $(wildcard ../seq2wav/includes/plugins/*.h) s2wplugin.cpp ../seq2wav/src/plugin/clapplugin.cpp Makefile
+	$(CXX) -shared -o $@ $(CXXFLAGS_R) -DBUILD_CLAP -Iclap/include s2wplugin.cpp ../seq2wav/src/plugin/clapplugin.cpp $(OBJS_R) $(LDFLAGS_R)
+
 FORCE:

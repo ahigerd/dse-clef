@@ -4,7 +4,7 @@
 #include "riffwriter.h"
 #include "../dsecontext.h"
 #include "../chunks/trackchunk.h"
-#include "../synth/mergetrack.h"
+#include "../synth/instrument.h"
 #include "synth/track.h"
 #include "s2wcontext.h"
 #include <cmath>
@@ -62,10 +62,19 @@ DSEContext* prepareSynthContext(S2WContext* ctx, std::istream& inputFile, const 
   std::unique_ptr<DSEFile> dseFile(new DSEFile(ctx, readFile(inputFile), 0));
   std::unique_ptr<DSEContext> context(new DSEContext(ctx, sampleRate, std::move(dseFile), std::move(pairFile), bankFile));
 
-  context->prepareTimings();
+  if (ctx->isDawPlugin) {
+    for (int i = 0; i < 256; i++) {
+      const Instrument* inst = context->findInstrument(i);
+      if (inst) {
+        context->registerInstrument(i, std::unique_ptr<IInstrument>(new Instrument(*inst)));
+      }
+    }
+  } else {
+    context->prepareTimings();
 
-  for (TrackChunk* track : context->tracks) {
-    context->addChannel(new Track(track, context.get()));
+    for (TrackChunk* track : context->tracks) {
+      context->addChannel(new Track(track, context.get()));
+    }
   }
 
   return context.release();

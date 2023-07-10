@@ -1,4 +1,7 @@
 #include "plugin/baseplugin.h"
+#include "plugin/clapplugin.h"
+#include "seq/sequenceevent.h"
+#include "synth/instrument.h"
 #include "codec/sampledata.h"
 #include "dsecontext.h"
 #include "dsefile.h"
@@ -9,10 +12,32 @@
 #define ARM7_CLOCK 33513982
 #define SAMPLE_RATE (ARM7_CLOCK / 1024.0)
 
+#ifdef BUILD_CLAP
+class DSEClapPlugin : public S2WClapPlugin<S2WPluginInfo>
+{
+public:
+  DSEClapPlugin(const clap_host_t* host)
+  : S2WClapPlugin<S2WPluginInfo>(host)
+  {
+    // initializers only
+  }
+
+protected:
+  BaseNoteEvent* createNoteEvent(const clap_event_note_t* event)
+  {
+    return static_cast<DSEContext*>(synth)->findInstrument(95)->makeEvent(event->key, event->velocity * 127);
+  }
+};
+#endif
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 struct S2WPluginInfo : public TagsM3UMixin {
   S2WPLUGIN_STATIC_FIELDS
+
+#ifdef BUILD_CLAP
+  using ClapPlugin = DSEClapPlugin;
+#endif
 
   static bool isPlayable(std::istream& file) {
     // Implementations should check to see if the file is supported.
@@ -68,12 +93,18 @@ struct S2WPluginInfo : public TagsM3UMixin {
 };
 #pragma GCC diagnostic pop
 
-const std::string S2WPluginInfo::version = "0.0.1";
+const std::string S2WPluginInfo::version = "0.0.2";
 const std::string S2WPluginInfo::pluginName = "dse2wav";
 const std::string S2WPluginInfo::pluginShortName = "dse2wav";
+const std::string S2WPluginInfo::author = "Adam Higerd";
+const std::string S2WPluginInfo::url = "https://bitbucket.org/ahigerd/dse2wav";
 ConstPairList S2WPluginInfo::extensions = { { "smd", "SMD sequence files (*.smd)" } };
 const std::string S2WPluginInfo::about =
-  "dse2wav copyright (C) 2020-2022 Adam Higerd\n"
+  "dse2wav copyright (C) 2020-2023 Adam Higerd\n"
   "Distributed under the MIT license.";
+
+#ifdef BUILD_CLAP
+ConstPairList S2WPluginInfo::bankExtensions = { { "swd", "SWD bank files (*.swd)" } };
+#endif
 
 SEQ2WAV_PLUGIN(S2WPluginInfo);

@@ -69,19 +69,11 @@ Instrument::Instrument(const ProgramInfo& preset, DSEContext* synth)
   }
 }
 
-BaseNoteEvent* Instrument::makeEvent(Track* track, const TrkEvent& ev) const
+BaseNoteEvent* Instrument::makeEvent(int noteNumber, int velocity) const
 {
-  int eventDuration = ev.duration(track->lastNoteLength);
-  track->lastNoteLength = eventDuration;
-  if (!eventDuration || programId < 0) {
-    return nullptr;
-  }
-
-  int noteNumber = ev.midiNote(track->octave);
   int bendRange = 2;
   const Sample* sample = nullptr;
   double pitch = noteNumber;
-  int velocity = ev.velocity();
   double noteGain = 1.0;
   double notePan = pan;
 
@@ -132,21 +124,59 @@ BaseNoteEvent* Instrument::makeEvent(Track* track, const TrkEvent& ev) const
     break;
   }
 
-  if (track->detune) {
-    pitch += (std::rand() / (0.5 * RAND_MAX) - 1.0) * track->detune;
-  }
-
   BaseNoteEvent* event = nullptr;
   if (sample) {
     InstrumentNoteEvent* note = new InstrumentNoteEvent;
     note->pitch = pitch;
     note->intParams.push_back(sample->sample->sampleID);
-    note->intParams.push_back(track->bendRange);
+    note->intParams.push_back(0);
     note->intParams.push_back(bendRange);
-    note->floatParams.push_back(track->pitchBend);
+    note->floatParams.push_back(0);
     event = note;
   } else {
     return nullptr;
+  }
+
+  noteGain = noteGain * (velocity / 127.0);
+  event->volume = noteGain;
+  event->pan = notePan;
+  event->duration = -1;
+  if (useEnvelope) {
+    event->setEnvelope(
+      attackLevel,
+      attackTime,
+      holdTime,
+      decayTime,
+      sustainLevel,
+      fadeTime,
+      releaseTime
+    );
+  }
+
+  return event;
+}
+
+BaseNoteEvent* Instrument::makeEvent(Track* track, const TrkEvent& ev) const
+{
+  int eventDuration = ev.duration(track->lastNoteLength);
+  track->lastNoteLength = eventDuration;
+  if (!eventDuration || programId < 0) {
+    return nullptr;
+  }
+
+  BaseNoteEvent* event = makeEvent(ev.midiNote(track->octave), ev.velocity());
+  if (!event) {
+    return nullptr;
+  }
+
+  InstrumentNoteEvent* note = dynamic_cast<InstrumentNoteEvent*>(event);
+  if (note) {
+    if (track->detune) {
+      note->pitch += (std::rand() / (0.5 * RAND_MAX) - 1.0) * track->detune;
+    }
+    note->intParams[1] = track->bendRange;
+    note->floatParams[0] = track->pitchBend;
+  } else {
 #if 0
     OscillatorEvent* osc = new OscillatorEvent;
     if (programId >= 0x7c) {
@@ -170,22 +200,8 @@ BaseNoteEvent* Instrument::makeEvent(Track* track, const TrkEvent& ev) const
 #endif
   }
 
-  noteGain = noteGain * (velocity / 127.0);
   event->timestamp = track->samplePos * context->sampleTime;
   event->duration = eventDuration * track->samplesPerTick * context->sampleTime;
-  event->volume = noteGain;
-  event->pan = notePan;
-  if (useEnvelope) {
-    event->setEnvelope(
-      attackLevel,
-      attackTime,
-      holdTime,
-      decayTime,
-      sustainLevel,
-      fadeTime,
-      releaseTime
-    );
-  }
 
   return event;
 }

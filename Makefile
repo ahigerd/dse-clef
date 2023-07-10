@@ -22,6 +22,8 @@ winamp: in_$(PLUGIN_NAME).dll
 
 foobar: foo_input_$(PLUGIN_NAME).dll
 
+clap: $(PLUGIN_NAME).clap
+
 seq2wav/src:
 	git submodule update --init --recursive
 
@@ -78,6 +80,9 @@ else
 in_$(PLUGIN_NAME).dll in_$(PLUGIN_NAME)_d.dll: FORCE
 	$(MAKE) CROSS=mingw $@
 endif
+
+$(PLUGIN_NAME).clap: includes $(PLUGIN_NAME)$(EXE) seq2wav/$(BUILDPATH)/libseq2wav.a plugins/Makefile config.mak plugins/s2wplugin.cpp
+	$(MAKE) -C plugins ../$@
 
 guiclean: FORCE
 	-[ -f gui/Makefile ] && $(MAKE) -C gui distclean

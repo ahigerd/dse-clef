@@ -23,6 +23,7 @@ struct Instrument : public DefaultInstrument
   std::vector<LFO> lfos;
   std::vector<SplitInfo> splits;
 
+  BaseNoteEvent* makeEvent(int noteNumber, int velocity) const;
   BaseNoteEvent* makeEvent(Track* track, const TrkEvent& ev) const;
   virtual Channel::Note* noteEvent(Channel* channel, std::shared_ptr<BaseNoteEvent> event);
   virtual void modulatorEvent(Channel* channel, std::shared_ptr<ModulatorEvent> event);
