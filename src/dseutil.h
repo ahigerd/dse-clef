@@ -7,8 +7,8 @@
 #include "utility.h"
 class S2WContext;
 
-std::string magicString(uint32_t magic);
-inline std::string magicString(uint64_t magic) { return magicString(uint32_t(magic >> 32)); }
+inline std::string magicString(uint32_t magic) { return fourccToString(magic); }
+inline std::string magicString(uint64_t magic) { return fourccToString(uint32_t(magic >> 32)); }
 
 inline constexpr bool isValidMagic64(uint64_t magic) {
   // This is technically too permissive, but it hasn't failed on

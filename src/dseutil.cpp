@@ -16,17 +16,6 @@
 #include <unistd.h>
 #endif
 
-std::string magicString(uint32_t magic)
-{
-  char str[4] = {
-    char((magic >> 24) & 0xFF),
-    char((magic >> 16) & 0xFF),
-    char((magic >> 8) & 0xFF),
-    char((magic >> 0) & 0xFF),
-  };
-  return std::string(str, 4);
-}
-
 template <typename T>
 std::string hexdumpToString(const std::vector<T>& buffer, const std::string& prefix)
 {

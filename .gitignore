@@ -19,6 +19,7 @@
 build
 build_win
 *_plugin_import.cpp
+core
 
 # build outputs
 depends.mak
@@ -31,6 +32,7 @@ include
 *.exe
 *_gui
 *_gui_d
+*.clap
 gui/Makefile*
 
 # external dependencies
