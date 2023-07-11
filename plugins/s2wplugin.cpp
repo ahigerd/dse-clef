@@ -25,7 +25,7 @@ public:
 protected:
   BaseNoteEvent* createNoteEvent(const clap_event_note_t* event)
   {
-    return static_cast<DSEContext*>(synth)->findInstrument(95)->makeEvent(event->key, event->velocity * 127);
+    return static_cast<Instrument*>(currentInstrument())->makeEvent(event->key, event->velocity * 127);
   }
 };
 #endif
