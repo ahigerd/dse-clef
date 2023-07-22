@@ -1,7 +1,4 @@
 #include "plugin/baseplugin.h"
-#include "plugin/clapplugin.h"
-#include "seq/sequenceevent.h"
-#include "synth/instrument.h"
 #include "codec/sampledata.h"
 #include "dsecontext.h"
 #include "dsefile.h"
@@ -13,6 +10,11 @@
 #define SAMPLE_RATE (ARM7_CLOCK / 1024.0)
 
 #ifdef BUILD_CLAP
+#include "plugin/clapplugin.h"
+#include "seq/sequenceevent.h"
+#include "synth/instrument.h"
+#include "synth/sampler.h"
+
 class DSEClapPlugin : public S2WClapPlugin<S2WPluginInfo>
 {
 public:
@@ -23,6 +25,13 @@ public:
   }
 
 protected:
+  void prepareChannel(Channel* channel) {
+    auto pitchBend = channel->param(Sampler::PitchBend);
+    if (!pitchBend) {
+      channel->addParam(Sampler::PitchBend, 0);
+    }
+  }
+
   BaseNoteEvent* createNoteEvent(const clap_event_note_t* event)
   {
     return static_cast<Instrument*>(currentInstrument())->makeEvent(event->key, event->velocity * 127);

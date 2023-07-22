@@ -208,7 +208,7 @@ std::shared_ptr<SequenceEvent> Track::readNextEvent()
       break;
     case TrkEvent::SetPitchBend:
       pitchBend = ev.param16BE() / 8192.0;
-      nextEvent = new ModulatorEvent(0, Sampler::PitchBend, pitchBend);
+      nextEvent = new ChannelEvent(Sampler::PitchBend, pitchBend);
       break;
     case TrkEvent::SetPitchBendRange:
       bendRange = ev.paramU8();

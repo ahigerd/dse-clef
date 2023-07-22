@@ -131,7 +131,6 @@ BaseNoteEvent* Instrument::makeEvent(int noteNumber, int velocity) const
     note->intParams.push_back(sample->sample->sampleID);
     note->intParams.push_back(0);
     note->intParams.push_back(bendRange);
-    note->floatParams.push_back(0);
     event = note;
   } else {
     return nullptr;
@@ -175,7 +174,6 @@ BaseNoteEvent* Instrument::makeEvent(Track* track, const TrkEvent& ev) const
       note->pitch += (std::rand() / (0.5 * RAND_MAX) - 1.0) * track->detune;
     }
     note->intParams[1] = track->bendRange;
-    note->floatParams[0] = track->pitchBend;
   } else {
 #if 0
     OscillatorEvent* osc = new OscillatorEvent;
@@ -218,7 +216,7 @@ Channel::Note* Instrument::noteEvent(Channel* channel, std::shared_ptr<BaseNoteE
   if (!bendRange) {
     bendRange = noteEvent->intParams[2];
   }
-  double pitchBend = noteEvent->floatParams[0];
+  double pitchBend = channel->paramValue(Sampler::PitchBend, noteEvent->timestamp, 0);
   double pitch = fastExp(noteEvent->pitch * expPitch);
   double duration = event->duration;
 
@@ -277,25 +275,42 @@ BaseOscillator* Instrument::makeLFO(const LFO& lfo) const
   return node;
 }
 
+void Instrument::channelEvent(Channel* channel, std::shared_ptr<ChannelEvent> event)
+{
+  DefaultInstrument::channelEvent(channel, event);
+  if (event->param == Sampler::PitchBend) {
+    updatePitchBends(channel, event->timestamp);
+  }
+}
+
 void Instrument::modulatorEvent(Channel* channel, std::shared_ptr<ModulatorEvent> event)
 {
   if ((event->param != Sampler::PitchBend && event->param != 'pbrg')) {
     DefaultInstrument::modulatorEvent(channel, event);
     return;
   }
+  updatePitchBends(channel, event->timestamp, event->param == 'pbrg', event->value);
+}
+
+void Instrument::updatePitchBends(Channel* channel, bool timestamp, bool updateRange, double pbrg)
+{
+  double bend = channel->paramValue(Sampler::PitchBend, timestamp, 0);
   for (auto& pair : channel->notes) {
     auto note = InstrumentNoteEvent::castShared(pair.second->event);
     auto param = pair.second->source->param(Sampler::PitchBend);
     if (!note || !param) {
       continue;
     }
-    if (event->param == 'pbrg') {
-      note->intParams[1] = event->value;
-    } else {
-      note->floatParams[0] = event->value;
+    if (updateRange) {
+      note->intParams[1] = pbrg;
     }
     double bendRange = (note->intParams[1] == 0 ? note->intParams[2] : note->intParams[1]);
-    double pitchBend = fastExp(note->floatParams[0] * bendRange * expPitch);
+    double pitchBend = fastExp(bend * bendRange * expPitch);
     param->setConstant(pitchBend);
   }
+}
+
+std::vector<int32_t> Instrument::supportedChannelParams() const
+{
+  return { AudioNode::Gain, AudioNode::Pan, Sampler::PitchBend };
 }

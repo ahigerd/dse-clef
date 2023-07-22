@@ -6,6 +6,7 @@
 #include "../chunks/trackchunk.h"
 #include "../synth/instrument.h"
 #include "synth/track.h"
+#include "synth/sampler.h"
 #include "s2wcontext.h"
 #include <cmath>
 #include <cstdlib>
@@ -74,6 +75,7 @@ DSEContext* prepareSynthContext(S2WContext* ctx, std::istream& inputFile, const 
 
     for (TrackChunk* track : context->tracks) {
       context->addChannel(new Track(track, context.get()));
+      context->channels.back()->addParam(Sampler::PitchBend, 0);
     }
   }
 
