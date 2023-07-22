@@ -231,7 +231,7 @@ Channel::Note* Instrument::noteEvent(Channel* channel, std::shared_ptr<BaseNoteE
     duration = sampleData->duration();
   }
 
-  Channel::Note* note = new Channel::Note(event, samp, duration);
+  Channel::Note* note = channel->allocNote(event, samp, duration);
 
   DelayNode* filter = nullptr;
   for (int i = 0; i < lfos.size(); i++) {
