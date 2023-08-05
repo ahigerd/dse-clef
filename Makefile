@@ -1,5 +1,4 @@
 include config.mak
-QMAKE=qmake
 
 cli: $(PLUGIN_NAME)$(EXE)
 
