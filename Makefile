@@ -1,3 +1,5 @@
+_default: cli
+
 include config.mak
 
 cli: $(PLUGIN_NAME)$(EXE)
