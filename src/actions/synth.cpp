@@ -60,7 +60,7 @@ DSEContext* prepareSynthContext(S2WContext* ctx, std::istream& inputFile, const 
   } catch (...) {
     // If the paired file doesn't exist or can't be parsed, it'll throw
   }
-  std::unique_ptr<DSEFile> dseFile(new DSEFile(ctx, readFile(inputFile), 0));
+  std::unique_ptr<DSEFile> dseFile(new DSEFile(ctx, readFile(inputFile, inputPath), 0));
   std::unique_ptr<DSEContext> context(new DSEContext(ctx, sampleRate, std::move(dseFile), std::move(pairFile), bankFile));
 
   if (ctx->isDawPlugin) {
