@@ -1,8 +1,8 @@
-This sample project has not been properly customized yet.
+dse-clef is copyright (c) 2020-2024 Adam Higerd
 
-This project is based upon seq2wav, distributed under the following terms:
+libclef is copyright (c) 2020-2024 Adam Higerd
 
-seq2wav is copyright (c) 2020 Adam Higerd
+Both dse-clef and libclef are distributed under the following terms:
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in

@@ -12,7 +12,7 @@
 #include <exception>
 #include <iostream>
 
-DSEContext::DSEContext(S2WContext* ctx, double sampleRate, std::unique_ptr<DSEFile> _smdl, std::unique_ptr<DSEFile> _swdl, std::shared_ptr<DSEFile> _bank)
+DSEContext::DSEContext(ClefContext* ctx, double sampleRate, std::unique_ptr<DSEFile> _smdl, std::unique_ptr<DSEFile> _swdl, std::shared_ptr<DSEFile> _bank)
 : SynthContext(ctx, sampleRate, 2), //basePhasePerSample(1.0 / sampleRate),
   smdl(std::move(_smdl)), swdl(std::move(_swdl)), prgi(nullptr), bankPrgi(nullptr), wavi(nullptr), bankWavi(nullptr),
   kgrp(nullptr), bankKgrp(nullptr), pcmd(nullptr), bankPcmd(nullptr), bank(_bank)

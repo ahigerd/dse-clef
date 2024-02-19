@@ -15,11 +15,11 @@
 #include "synth/instrument.h"
 #include "synth/sampler.h"
 
-class DSEClapPlugin : public S2WClapPlugin<S2WPluginInfo>
+class DSEClapPlugin : public ClefClapPlugin<ClefPluginInfo>
 {
 public:
   DSEClapPlugin(const clap_host_t* host)
-  : S2WClapPlugin<S2WPluginInfo>(host)
+  : ClefClapPlugin<ClefPluginInfo>(host)
   {
     // initializers only
   }
@@ -41,14 +41,14 @@ protected:
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-struct S2WPluginInfo : public TagsM3UMixin {
-  S2WPLUGIN_STATIC_FIELDS
+struct ClefPluginInfo : public TagsM3UMixin {
+  CLEF_PLUGIN_STATIC_FIELDS
 
 #ifdef BUILD_CLAP
   using ClapPlugin = DSEClapPlugin;
 #endif
 
-  static bool isPlayable(std::istream& file) {
+  static bool isPlayable(ClefContext*, const std::string&, std::istream& file) {
     // Implementations should check to see if the file is supported.
     // Return false or throw an exception to report failure.
     char magic[4];
@@ -58,13 +58,13 @@ struct S2WPluginInfo : public TagsM3UMixin {
     return false;
   }
 
-  static int sampleRate(S2WContext* ctx, const std::string& filename, std::istream& file) {
+  static int sampleRate(ClefContext* ctx, const std::string& filename, std::istream& file) {
     // Implementations should return the sample rate of the file.
     // This can be hard-coded if the plugin always uses the same sample rate.
     return SAMPLE_RATE;
   }
 
-  static double length(S2WContext* ctx, const std::string& filename, std::istream& file) {
+  static double length(ClefContext* ctx, const std::string& filename, std::istream& file) {
     // Implementations should return the length of the file in seconds.
     auto buffer = readFile(file, filename);
     std::unique_ptr<DSEFile> dseFile(new DSEFile(ctx, buffer));
@@ -74,7 +74,7 @@ struct S2WPluginInfo : public TagsM3UMixin {
   }
 
   /*
-  static TagMap readTags(S2WContext* ctx, const std::string& filename, std::istream& file) {
+  static TagMap readTags(ClefContext* ctx, const std::string& filename, std::istream& file) {
     // Implementations should read the tags from the file.
     // If the file format does not support embedded tags, consider
     // inheriting from TagsM3UMixin and removing this function.
@@ -82,7 +82,7 @@ struct S2WPluginInfo : public TagsM3UMixin {
   }
   */
 
-  SynthContext* prepare(S2WContext* ctx, const std::string& filename, std::istream& file) {
+  SynthContext* prepare(ClefContext* ctx, const std::string& filename, std::istream& file) {
     // Prepare to play the file. Load any necessary data into memory and store any
     // applicable state in members on this plugin object.
 
@@ -102,18 +102,18 @@ struct S2WPluginInfo : public TagsM3UMixin {
 };
 #pragma GCC diagnostic pop
 
-const std::string S2WPluginInfo::version = "0.0.2";
-const std::string S2WPluginInfo::pluginName = "dse2wav";
-const std::string S2WPluginInfo::pluginShortName = "dse2wav";
-const std::string S2WPluginInfo::author = "Adam Higerd";
-const std::string S2WPluginInfo::url = "https://bitbucket.org/ahigerd/dse2wav";
-ConstPairList S2WPluginInfo::extensions = { { "smd", "SMD sequence files (*.smd)" } };
-const std::string S2WPluginInfo::about =
-  "dse2wav copyright (C) 2020-2023 Adam Higerd\n"
+const std::string ClefPluginInfo::version = "0.0.2";
+const std::string ClefPluginInfo::pluginName = "dse-clef";
+const std::string ClefPluginInfo::pluginShortName = "dse-clef";
+const std::string ClefPluginInfo::author = "Adam Higerd";
+const std::string ClefPluginInfo::url = "https://bitbucket.org/ahigerd/dse-clef";
+ConstPairList ClefPluginInfo::extensions = { { "smd", "SMD sequence files (*.smd)" } };
+const std::string ClefPluginInfo::about =
+  "dse-clef copyright (C) 2020-2023 Adam Higerd\n"
   "Distributed under the MIT license.";
 
 #ifdef BUILD_CLAP
-ConstPairList S2WPluginInfo::bankExtensions = { { "swd", "SWD bank files (*.swd)" } };
+ConstPairList ClefPluginInfo::bankExtensions = { { "swd", "SWD bank files (*.swd)" } };
 #endif
 
-SEQ2WAV_PLUGIN(S2WPluginInfo);
+CLEF_PLUGIN(ClefPluginInfo);

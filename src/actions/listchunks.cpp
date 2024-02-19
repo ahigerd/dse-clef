@@ -1,12 +1,12 @@
 #include "actions.h"
-#include "s2wcontext.h"
+#include "clefcontext.h"
 #include "../dsefile.h"
 #include "../dseutil.h"
 #include <iostream>
 #include "../chunks/trackchunk.h"
 #include "../chunks/prgichunk.h"
 
-bool listChunks(S2WContext* ctx, const std::vector<std::string>& paths, const std::string& outputPath, const CommandArgs& args)
+bool listChunks(ClefContext* ctx, const std::vector<std::string>& paths, const std::string& outputPath, const CommandArgs& args)
 {
   bool verbose = args.hasKey("verbose");
   for (const std::string& filename : paths) {

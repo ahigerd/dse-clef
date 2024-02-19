@@ -6,7 +6,7 @@
 #include "codec/sampledata.h"
 #include <iostream>
 
-bool dumpStreams(S2WContext* ctx, const std::vector<std::string>& paths, const std::string& outputPath, const CommandArgs& args)
+bool dumpStreams(ClefContext* ctx, const std::vector<std::string>& paths, const std::string& outputPath, const CommandArgs& args)
 {
   for (const std::string& path : paths) {
     if (!mkdirIfNeeded(outputPath)) {

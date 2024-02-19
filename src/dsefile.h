@@ -7,15 +7,15 @@
 #include <cstdint>
 #include "dsechunk.h"
 #include "vectorslice.h"
-class S2WContext;
+class ClefContext;
 
 class DSEFile
 {
 public:
-  DSEFile(S2WContext* ctx, const std::string& filename);
-  DSEFile(S2WContext* ctx, const std::vector<uint8_t>& buffer, int offset = 0);
+  DSEFile(ClefContext* ctx, const std::string& filename);
+  DSEFile(ClefContext* ctx, const std::vector<uint8_t>& buffer, int offset = 0);
 
-  inline S2WContext* context() const { return ctx; }
+  inline ClefContext* context() const { return ctx; }
 
   uint32_t magic() const;
   uint32_t fileLength() const;
@@ -50,7 +50,7 @@ private:
   std::vector<uint8_t> data;
   ConstVectorSlice<uint8_t> header;
   std::vector<std::unique_ptr<DSEChunk>> chunks;
-  S2WContext* ctx;
+  ClefContext* ctx;
 };
 
 #endif

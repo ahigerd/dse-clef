@@ -10,7 +10,7 @@
 #include <sstream>
 #include <exception>
 
-bool dumpSamples(S2WContext* ctx, const std::vector<std::string>& paths, const std::string& outputPath, const CommandArgs& args)
+bool dumpSamples(ClefContext* ctx, const std::vector<std::string>& paths, const std::string& outputPath, const CommandArgs& args)
 {
   bool raw = args.hasKey("raw");
   DSEFile dseFile(ctx, paths[0]);

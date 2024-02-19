@@ -7,7 +7,7 @@
 #include "../synth/instrument.h"
 #include "synth/track.h"
 #include "synth/sampler.h"
-#include "s2wcontext.h"
+#include "clefcontext.h"
 #include <cmath>
 #include <cstdlib>
 #include <algorithm>
@@ -35,7 +35,7 @@ static std::string makeRelative(const std::string& base, const std::string& path
   return base.substr(0, slashPos + 1) + path;
 }
 
-DSEContext* prepareSynthContext(S2WContext* ctx, std::istream& inputFile, const std::string& inputPath, const std::string& pairPath, const std::string& bankPath, const CommandArgs* args)
+DSEContext* prepareSynthContext(ClefContext* ctx, std::istream& inputFile, const std::string& inputPath, const std::string& pairPath, const std::string& bankPath, const CommandArgs* args)
 {
   double sampleRate = ARM7_CLOCK / 1024.0;
 
@@ -83,7 +83,7 @@ DSEContext* prepareSynthContext(S2WContext* ctx, std::istream& inputFile, const 
 }
 
 // TODO: pass sample rate
-bool synthSequenceToFile(S2WContext* ctx, const std::vector<std::string>& paths, const std::string& outputPath, const CommandArgs& args)
+bool synthSequenceToFile(ClefContext* ctx, const std::vector<std::string>& paths, const std::string& outputPath, const CommandArgs& args)
 {
   if (paths.size() < 1) {
     return false;

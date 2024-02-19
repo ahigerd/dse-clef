@@ -5,7 +5,7 @@
 #include <vector>
 #include <memory>
 #include "dsefile.h"
-class S2WContext;
+class ClefContext;
 class QLineEdit;
 class QTableWidget;
 class QCheckBox;
@@ -18,7 +18,7 @@ class ExtractDialog : public QDialog
 {
   Q_OBJECT
 public:
-  ExtractDialog(S2WContext* ctx, QWidget* parent = nullptr);
+  ExtractDialog(ClefContext* ctx, QWidget* parent = nullptr);
 
 private slots:
   void browseSource();
@@ -47,14 +47,14 @@ private:
   bool scanning;
 
   struct ScanResult {
-    ScanResult(S2WContext* ctx, const std::vector<uint8_t>& buffer, int offset);
+    ScanResult(ClefContext* ctx, const std::vector<uint8_t>& buffer, int offset);
     DSEFile dseFile;
     std::string originalName;
     std::string romajiFilename;
     std::string filename;
   };
   std::vector<std::unique_ptr<ScanResult>> scannedFiles;
-  S2WContext* ctx;
+  ClefContext* ctx;
 };
 
 #endif

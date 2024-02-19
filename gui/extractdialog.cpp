@@ -1,5 +1,5 @@
 #include "extractdialog.h"
-#include "s2wcontext.h"
+#include "clefcontext.h"
 #include "dseutil.h"
 #include "mojibake.h"
 #include "guiutils.h"
@@ -22,7 +22,7 @@
 #include <QFileInfo>
 #include <QThread>
 
-ExtractDialog::ScanResult::ScanResult(S2WContext* ctx, const std::vector<uint8_t>& buffer, int offset)
+ExtractDialog::ScanResult::ScanResult(ClefContext* ctx, const std::vector<uint8_t>& buffer, int offset)
 : dseFile(ctx, buffer, offset)
 {
   filename = dseFile.originalFilename();
@@ -44,7 +44,7 @@ ExtractDialog::ScanResult::ScanResult(S2WContext* ctx, const std::vector<uint8_t
   originalName = filename;
 }
 
-ExtractDialog::ExtractDialog(S2WContext* ctx, QWidget* parent)
+ExtractDialog::ExtractDialog(ClefContext* ctx, QWidget* parent)
 : QDialog(parent), scanning(false), ctx(ctx)
 {
   setAttribute(Qt::WA_DeleteOnClose);
@@ -180,7 +180,7 @@ void ExtractDialog::extract()
   if (makeM3U) {
     m3u.setFileName(dir.absoluteFilePath("!tags.m3u"));
     if (!m3u.open(QIODevice::WriteOnly)) {
-      QMessageBox::critical(this, tr("dse2wav"), tr("Unable to open file for writing:\n%1").arg(m3u.fileName()));
+      QMessageBox::critical(this, tr("dse-clef"), tr("Unable to open file for writing:\n%1").arg(m3u.fileName()));
       return;
     }
     QFileInfo src(txtSource->text());
@@ -201,7 +201,7 @@ void ExtractDialog::extract()
     }
     QFile dest(dir.absoluteFilePath(item->text()));
     if (!dest.open(QIODevice::WriteOnly)) {
-      QMessageBox::critical(this, tr("dse2wav"), tr("Unable to open file for writing:\n%1").arg(dest.fileName()));
+      QMessageBox::critical(this, tr("dse-clef"), tr("Unable to open file for writing:\n%1").arg(dest.fileName()));
       return;
     }
     const DSEFile* dseFile = &scannedFiles[i]->dseFile;

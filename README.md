@@ -1,7 +1,7 @@
-dse2wav
+dse-clef
 =======
 
-dse2wav is a player for game music originally published using Procyon Digital Sound Elements.
+dse-clef is a player for game music originally published using Procyon Digital Sound Elements.
 
 Building
 --------
@@ -39,10 +39,10 @@ edited in `msvc.mak`.
 
 License
 -------
-dse2wav is copyright (c) 2020-2022 Adam Higerd and distributed under the terms of the
+dse-clef is copyright (c) 2020-2022 Adam Higerd and distributed under the terms of the
 [MIT license](LICENSE.md).
 
-This project is based upon seq2wav, copyright (c) 2020-2022 Adam Higerd and distributed
+This project is based upon libclef, copyright (c) 2020-2022 Adam Higerd and distributed
 under the terms of the [MIT license](LICENSE.md).
 
 Special Thanks

@@ -5,7 +5,7 @@
 #include <string>
 #include <cstdint>
 #include "utility.h"
-class S2WContext;
+class ClefContext;
 
 inline std::string magicString(uint32_t magic) { return fourccToString(magic); }
 inline std::string magicString(uint64_t magic) { return fourccToString(uint32_t(magic >> 32)); }
@@ -28,7 +28,7 @@ std::string hexdumpToString(const std::vector<T>& buffer, const std::string& pre
 /* Filesystem I/O */
 
 bool mkdirIfNeeded(const std::string& path);
-std::vector<uint8_t> readFile(S2WContext* ctx, const std::string& filename);
+std::vector<uint8_t> readFile(ClefContext* ctx, const std::string& filename);
 std::vector<uint8_t> readFile(std::istream& file, const std::string& filename = std::string());
 
 #endif

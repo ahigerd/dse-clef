@@ -1,5 +1,5 @@
 #include "dseutil.h"
-#include "s2wcontext.h"
+#include "clefcontext.h"
 #include <iomanip>
 #include <sstream>
 #include <fstream>
@@ -70,7 +70,7 @@ bool mkdirIfNeeded(const std::string& path) {
   return true;
 }
 
-std::vector<uint8_t> readFile(S2WContext* ctx, const std::string& filename)
+std::vector<uint8_t> readFile(ClefContext* ctx, const std::string& filename)
 {
   auto fptr = ctx->openFile(filename);
   if (!fptr || !*fptr) {

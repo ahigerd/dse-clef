@@ -24,8 +24,8 @@ core
 # build outputs
 depends.mak
 include
-*2wav
-*2wav_d
+/*-clef
+/*-clef_d
 *.dll
 *.a
 *.so
@@ -33,6 +33,7 @@ include
 *_gui
 *_gui_d
 *.clap
+Makefile.d
 gui/Makefile*
 
 # external dependencies
@@ -41,4 +42,4 @@ plugins/pfc
 plugins/libPPUI
 
 # de-ignore submodule
-!/seq2wav
+!/libclef

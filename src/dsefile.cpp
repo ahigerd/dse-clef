@@ -1,17 +1,17 @@
 #include "dsefile.h"
 #include "dsechunk.h"
 #include "dseutil.h"
-#include "s2wcontext.h"
+#include "clefcontext.h"
 #include <exception>
 #include <iostream>
 
-DSEFile::DSEFile(S2WContext* ctx, const std::string& filename)
+DSEFile::DSEFile(ClefContext* ctx, const std::string& filename)
 : ctx(ctx)
 {
   load(readFile(ctx, filename), 0);
 }
 
-DSEFile::DSEFile(S2WContext* ctx, const std::vector<uint8_t>& buffer, int offset)
+DSEFile::DSEFile(ClefContext* ctx, const std::vector<uint8_t>& buffer, int offset)
 : ctx(ctx)
 {
   load(buffer, offset);

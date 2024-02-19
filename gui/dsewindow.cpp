@@ -6,7 +6,7 @@
 #include <QMenu>
 #include <QtDebug>
 
-DSEWindow::DSEWindow(S2WPluginBase* plugin)
+DSEWindow::DSEWindow(ClefPluginBase* plugin)
 : MainWindow(plugin)
 {
   resize(400, 300);

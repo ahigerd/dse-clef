@@ -5,7 +5,7 @@
 #include "codec/sampledata.h"
 #include "../dsefile.h"
 #include "../dseutil.h"
-#include "s2wcontext.h"
+#include "clefcontext.h"
 #include <exception>
 
 PcmdChunk::PcmdChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int offset)

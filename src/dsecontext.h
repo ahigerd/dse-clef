@@ -20,7 +20,7 @@ struct SplitInfo;
 class DSEContext : public SynthContext
 {
 public:
-  DSEContext(S2WContext* ctx, double sampleRate, std::unique_ptr<DSEFile> _smdl, std::unique_ptr<DSEFile> _swdl, std::shared_ptr<DSEFile> _bank);
+  DSEContext(ClefContext* ctx, double sampleRate, std::unique_ptr<DSEFile> _smdl, std::unique_ptr<DSEFile> _swdl, std::shared_ptr<DSEFile> _bank);
   ~DSEContext();
 
   int loopSample;

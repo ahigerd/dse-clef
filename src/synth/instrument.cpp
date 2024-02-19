@@ -4,7 +4,7 @@
 #include "codec/sampledata.h"
 #include "synth/sampler.h"
 #include "synth/oscillator.h"
-#include "s2wcontext.h"
+#include "clefcontext.h"
 #include "dsecontext.h"
 #include "utility.h"
 #include "../chunks/wavichunk.h"
@@ -220,7 +220,7 @@ Channel::Note* Instrument::noteEvent(Channel* channel, std::shared_ptr<BaseNoteE
   double pitch = fastExp(noteEvent->pitch * expPitch);
   double duration = event->duration;
 
-  SampleData* sampleData = channel->ctx->s2wContext()->getSample(sampleID);
+  SampleData* sampleData = channel->ctx->clefContext()->getSample(sampleID);
   Sampler* samp = new Sampler(channel->ctx, sampleData, pitch);
   samp->param(AudioNode::Gain)->setConstant(noteEvent->volume);
   samp->param(AudioNode::Pan)->setConstant(noteEvent->pan);

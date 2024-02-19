@@ -1,2 +1,2 @@
-PLUGIN_NAME = dse2wav
--include $(ROOTPATH)seq2wav/config.mak
+PLUGIN_NAME = dse-clef
+-include $(ROOTPATH)libclef/config.mak

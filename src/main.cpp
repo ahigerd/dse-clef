@@ -1,4 +1,4 @@
-#include "s2wcontext.h"
+#include "clefcontext.h"
 #include "commandargs.h"
 #include "dsefile.h"
 #include "riffwriter.h"
@@ -72,11 +72,11 @@ int main(int argc, char** argv)
     return actionError ? 1 : 0;
   }
 
-  S2WContext s2w;
+  ClefContext clef;
   std::string outputPath = args.getString("output", "./output");
   if (outputPath[outputPath.size() - 1] == '/') {
     outputPath.erase(outputPath.end() - 1, outputPath.end());
   }
-  bool didSomething = actionFns[action](&s2w, inputs, outputPath, args);
+  bool didSomething = actionFns[action](&clef, inputs, outputPath, args);
   return didSomething ? 0 : 2;
 }

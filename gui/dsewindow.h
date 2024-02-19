@@ -7,7 +7,7 @@ class DSEWindow : public MainWindow
 {
   Q_OBJECT
 public:
-  DSEWindow(S2WPluginBase* plugin);
+  DSEWindow(ClefPluginBase* plugin);
 
 public slots:
   void extract();

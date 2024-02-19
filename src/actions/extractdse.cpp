@@ -17,7 +17,7 @@ namespace std {
 
 static const char spinner[] = "|/-\\";
 
-bool extractDSE(S2WContext* ctx, const std::vector<std::string>& paths, const std::string& outputPath, const CommandArgs& args)
+bool extractDSE(ClefContext* ctx, const std::vector<std::string>& paths, const std::string& outputPath, const CommandArgs& args)
 {
   bool romaji = args.hasKey("romaji");
   if (!std::filesystem::create_directories(std::filesystem::path(outputPath))) {
