@@ -102,7 +102,7 @@ struct ClefPluginInfo : public TagsM3UMixin {
 };
 #pragma GCC diagnostic pop
 
-const std::string ClefPluginInfo::version = "0.0.2";
+const std::string ClefPluginInfo::version = "0.0.3";
 const std::string ClefPluginInfo::pluginName = "dse-clef";
 const std::string ClefPluginInfo::pluginShortName = "dse-clef";
 const std::string ClefPluginInfo::author = "Adam Higerd";
