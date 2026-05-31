@@ -27,6 +27,7 @@ std::string hexdumpToString(const std::vector<T>& buffer, const std::string& pre
 
 /* Filesystem I/O */
 
+bool isDir(const std::string& path);
 bool mkdirIfNeeded(const std::string& path);
 std::vector<uint8_t> readFile(ClefContext* ctx, const std::string& filename);
 std::vector<uint8_t> readFile(std::istream& file, const std::string& filename = std::string());

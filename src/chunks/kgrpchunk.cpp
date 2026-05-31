@@ -1,5 +1,6 @@
 #include "kgrpchunk.h"
 #include "../dseutil.h"
+#include <sstream>
 
 KgrpChunk::KgrpChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int offset)
 : KgrpChunk::super(parent, buffer, offset)
@@ -21,4 +22,17 @@ KgrpChunk::KgrpChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int of
     offset += 8;
     counter++;
   }
+}
+
+std::string KgrpChunk::debug(const std::string& prefix) const
+{
+  std::ostringstream ss;
+  int i = 0;
+  for (const auto& group : groups) {
+    ss << prefix << "Group " << i << ":" << std::endl;
+    ss << prefix << "\tminChannel=" << int(group.minChannel) << " maxChannel=" << int(group.maxChannel) << std::endl;
+    ss << prefix << "\tpriority=" << int(group.priority) << " polyphony=" << int(group.polyphony) << std::endl;
+    ++i;
+  }
+  return ss.str();
 }

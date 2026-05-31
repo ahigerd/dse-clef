@@ -80,6 +80,7 @@ std::string PrgiChunk::debug(const std::string& prefix) const
     for (const auto& split : iter.second.splits) {
       ss << prefix << "\tSplit: (" << int(split.lowKey) << "-" << int(split.highKey) << ")x("
         << int(split.lowVelocity) << "-" << int(split.highVelocity) << ")" << std::endl;
+      ss << prefix << "\t\tKey group: " << int(split.keygroup) << std::endl;
       ss << prefix << "\t\tSample: " << split.sampleIndex << std::endl;
       ss << prefix << "\t\tVolume: " << (int)split.volume << std::endl;
       ss << prefix << "\t\tRoot: " << (int)split.rootKey << " (transpose " << (int)split.transpose << ")" << std::endl;

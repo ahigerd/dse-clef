@@ -59,6 +59,15 @@ void hexdump(const std::vector<uint8_t>& buffer, int limit)
   }
 }
 
+bool isDir(const std::string& path) {
+  struct stat st;
+  int err = ::stat(path.c_str(), &st);
+  if (err) {
+    return false;
+  }
+  return S_ISDIR(st.st_mode);
+}
+
 bool mkdirIfNeeded(const std::string& path) {
   if (::access(path.c_str(), W_OK) != 0) {
 #ifdef _WIN32

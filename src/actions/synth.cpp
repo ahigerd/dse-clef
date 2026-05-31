@@ -103,15 +103,6 @@ bool synthSequenceToFile(ClefContext* ctx, const std::vector<std::string>& paths
 
   bool didSomething = false;
 
-#ifndef _WIN32
-  if (outputPath != "-")
-#endif
-  {
-    if (!mkdirIfNeeded(outputPath)) {
-      throw std::runtime_error("Unable to create output path '" + outputPath + "'");
-    }
-  }
-
   std::vector<bool> trackDone;
   int trackCount = context->tracks.size();
   int tracksLeft = trackCount;
@@ -131,8 +122,22 @@ bool synthSequenceToFile(ClefContext* ctx, const std::vector<std::string>& paths
 #ifndef _WIN32
   if (outputPath == "-") {
     filename = "/dev/stdout";
-  }
+  } else
 #endif
+  if (isDir(outputPath)) {
+    std::string baseName = paths[0].substr(0, paths.size() - 4) + ".wav";
+    int slashPos = baseName.rfind("/");
+#ifdef _WIN32
+    if (slashPos == std::string::npos) {
+      slashPos = baseName.rfind("\\");
+    }
+#endif
+    if (slashPos != std::string::npos) {
+      baseName = baseName.substr(slashPos + 1);
+    }
+    filename = outputPath + "/" + baseName;
+  }
+
   std::cerr << "\rWriting " << filename << "..." << std::endl;
   // TODO: ensure length accuracy
   RiffWriter riff(context->sampleRate, true, sampleLength * 2);

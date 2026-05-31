@@ -66,6 +66,9 @@ std::string WaviChunk::debug(const std::string& prefix) const
       ss << " (Unknown)" << std::endl;
       break;
     }
+    if (iter.second.keygroup) {
+      ss << prefix << "\tKey group: " << int(iter.second.keygroup) << std::endl;
+    }
     ss << prefix << "\tRoot: " << int(iter.second.rootKey) << std::endl;
     ss << prefix << "\tTranspose: " << int(iter.second.transpose) << std::endl;
     ss << prefix << "\tTune: " << (int)iter.second.coarseTune << " / " << (int)iter.second.fineTune << std::endl;

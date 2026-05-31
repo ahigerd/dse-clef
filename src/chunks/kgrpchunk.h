@@ -16,6 +16,8 @@ public:
   KgrpChunk(DSEFile* parent, const std::vector<uint8_t>& buffer, int offset);
 
   std::vector<KeyGroup> groups;
+
+  virtual std::string debug(const std::string& prefix = std::string()) const;
 };
 
 #endif
